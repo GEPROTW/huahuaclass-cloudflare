@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SystemConfig, WebsiteConfig, WebsitePricingItem, WebsiteFaqItem, WebsiteFeatureItem, Teacher, WebsiteCourseItem, WebsiteTeacherConfig, WebsiteTestimonialItem, WebsiteGalleryItem, WebsiteContactItem } from '../types';
 import { DEFAULT_WEBSITE_CONFIG } from '../constants';
-import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star } from 'lucide-react';
+import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 
 interface WebsiteSettingsProps {
@@ -548,7 +548,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                             </div>
 
                             <div className="space-y-4">
-                                <p className="text-xs text-slate-500">以下課程項目來自「系統設定 -> 授課科目」。您可以在此編輯顯示文字或隱藏個別課程。</p>
+                                <p className="text-xs text-slate-500">以下課程項目來自「系統設定 → 授課科目」。您可以在此編輯顯示文字或隱藏個別課程。</p>
                                 <div className="grid grid-cols-1 gap-4">
                                     {config.courses.items.map((item, idx) => (
                                         <div key={idx} className={`flex gap-4 items-start p-4 rounded-xl border transition-colors ${item.visible ? 'bg-slate-50 border-slate-200' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
@@ -984,7 +984,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             {config.contact.info.phone.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
-                                    <input type="text" value={config.contact.info.phone.value} onChange={e => updateContactInfo('phone', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.phone.visible && 'bg-slate-100 text-slate-500'}`} />
+                                    <input type="text" value={config.contact.info.phone.value} onChange={(e) => updateContactInfo('phone', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.phone.visible ? 'bg-slate-100 text-slate-500' : ''}`} />
                                 </div>
                                 <div>
                                     <div className="flex justify-between items-center mb-1">
@@ -996,7 +996,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             {config.contact.info.email.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
-                                    <input type="text" value={config.contact.info.email.value} onChange={e => updateContactInfo('email', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.email.visible && 'bg-slate-100 text-slate-500'}`} />
+                                    <input type="text" value={config.contact.info.email.value} onChange={(e) => updateContactInfo('email', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.email.visible ? 'bg-slate-100 text-slate-500' : ''}`} />
                                 </div>
                                 <div className="md:col-span-2">
                                     <div className="flex justify-between items-center mb-1">
@@ -1008,7 +1008,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             {config.contact.info.address.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
-                                    <input type="text" value={config.contact.info.address.value} onChange={e => updateContactInfo('address', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.address.visible && 'bg-slate-100 text-slate-500'}`} />
+                                    <input type="text" value={config.contact.info.address.value} onChange={(e) => updateContactInfo('address', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.address.visible ? 'bg-slate-100 text-slate-500' : ''}`} />
                                 </div>
                                 <div className="md:col-span-2">
                                     <div className="flex justify-between items-center mb-1">
@@ -1020,7 +1020,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             {config.contact.info.openHours.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
-                                    <input type="text" value={config.contact.info.openHours.value} onChange={e => updateContactInfo('openHours', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.openHours.visible && 'bg-slate-100 text-slate-500'}`} />
+                                    <input type="text" value={config.contact.info.openHours.value} onChange={(e) => updateContactInfo('openHours', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.openHours.visible ? 'bg-slate-100 text-slate-500' : ''}`} />
                                 </div>
                             </div>
                         </div>
