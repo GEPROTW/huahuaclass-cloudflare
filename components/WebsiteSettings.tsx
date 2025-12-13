@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SystemConfig, WebsiteConfig, WebsitePricingItem, WebsiteFaqItem, WebsiteFeatureItem, Teacher, WebsiteCourseItem, WebsiteTeacherConfig, WebsiteTestimonialItem, WebsiteGalleryItem, WebsiteContactItem } from '../types';
 import { DEFAULT_WEBSITE_CONFIG } from '../constants';
-import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, User, Star } from 'lucide-react';
+import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 
 interface WebsiteSettingsProps {
@@ -628,7 +628,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                             onClick={() => updateTeacherItem(item.teacherId, 'visible', !item.visible)}
                                                             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors ${item.visible ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-200 text-slate-500 border-slate-300'}`}
                                                         >
-                                                            {item.visible ? <span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示中</span> : <span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 已隱藏</span>}
+                                                            {item.visible ? (<span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示中</span>) : (<span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 已隱藏</span>)}
                                                         </button>
                                                     </div>
                                                     <input 
@@ -726,7 +726,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                 onClick={() => updateTestimonial(idx, 'visible', !item.visible)}
                                                 className={`text-xs px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${item.visible ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-200 text-slate-500 border-slate-300'}`}
                                             >
-                                                {item.visible ? <span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示</span> : <span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 隱藏</span>}
+                                                {item.visible ? (<span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示</span>) : (<span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 隱藏</span>)}
                                             </button>
                                         </div>
                                     </div>
