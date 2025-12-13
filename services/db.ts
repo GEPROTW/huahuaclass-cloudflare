@@ -169,6 +169,32 @@ export const db = {
         }
     },
 
+    // --- Image Delete (R2) ---
+    async deleteImage(imageUrl: string): Promise<void> {
+        if (!imageUrl) return;
+        
+        // Extract filename from URL (e.g., /images/uuid.jpg -> uuid.jpg)
+        // If it's a full URL or relative, we handle basic splitting
+        const parts = imageUrl.split('/');
+        const filename = parts.pop();
+        
+        if (!filename) return;
+
+        if (useLocalStorage) {
+            console.log("Local Storage Mode: Skipping R2 deletion for", filename);
+            return;
+        }
+
+        try {
+            await this.apiCall(`/api/upload?filename=${filename}`, {
+                method: 'DELETE'
+            });
+            console.log(`Deleted image: ${filename}`);
+        } catch (e) {
+            console.warn("Failed to delete image from R2", e);
+        }
+    },
+
     async getCollection(collection: string) {
         try {
             const res = await this.apiCall(`/api/data?collection=${collection}&mode=${currentMode}`);

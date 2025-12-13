@@ -4,6 +4,7 @@ import { SystemConfig, WebsiteConfig, WebsitePricingItem, WebsiteFaqItem, Websit
 import { DEFAULT_WEBSITE_CONFIG } from '../constants';
 import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
+import { db } from '../services/db';
 
 interface WebsiteSettingsProps {
     systemConfig: SystemConfig;
@@ -261,7 +262,15 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
         setConfig(prev => ({ ...prev, gallery: { ...prev.gallery, images: [...prev.gallery.images, { url: "", visible: true }] } }));
     };
 
-    const removeGalleryImage = (index: number) => {
+    const removeGalleryImage = async (index: number) => {
+        const item = config.gallery.images[index];
+        const url = typeof item === 'string' ? item : item.url;
+        
+        // Delete from R2 if url exists
+        if (url) {
+            await db.deleteImage(url);
+        }
+
         const newImages = [...config.gallery.images];
         newImages.splice(index, 1);
         setConfig(prev => ({ ...prev, gallery: { ...prev.gallery, images: newImages } }));
@@ -376,6 +385,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                         label="主圖片 (建議 1920x1080)"
                                         value={config.hero.heroImage}
                                         onChange={(url) => updateHero('heroImage', url)}
+                                        onDelete={async (url) => await db.deleteImage(url)}
                                     />
                                 </div>
                             </div>
@@ -615,6 +625,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                     <ImageUploader 
                                                         value={item.imageUrl || ''} 
                                                         onChange={(url) => updateTeacherItem(item.teacherId, 'imageUrl', url)}
+                                                        onDelete={async (url) => await db.deleteImage(url)}
                                                         className="aspect-[3/4] w-full"
                                                         placeholderLabel="上傳照片"
                                                         label="" 
@@ -917,6 +928,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                 <ImageUploader 
                                                     value={imgUrl}
                                                     onChange={(url) => updateGalleryImage(idx, 'url', url)}
+                                                    onDelete={async (url) => await db.deleteImage(url)}
                                                     className="aspect-video mt-0"
                                                     placeholderLabel="上傳活動照片"
                                                     label="" 

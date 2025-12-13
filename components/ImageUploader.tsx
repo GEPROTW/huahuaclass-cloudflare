@@ -6,6 +6,7 @@ import { db } from '../services/db';
 interface ImageUploaderProps {
     value: string;
     onChange: (url: string) => void;
+    onDelete?: (url: string) => Promise<void>; // Optional callback to delete from storage
     label?: string; // Optional label shown outside
     placeholderLabel?: string; // Text shown when empty
     className?: string; // Wrapper class for dimensions/aspect ratio
@@ -14,6 +15,7 @@ interface ImageUploaderProps {
 export const ImageUploader: React.FC<ImageUploaderProps> = ({ 
     value, 
     onChange, 
+    onDelete,
     label, 
     placeholderLabel = "點擊上傳圖片", 
     className = "h-40" 
@@ -42,6 +44,19 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         setIsUploading(true);
         setError(null);
 
+        // Optional: If there's an existing image and we're replacing it,
+        // we might want to delete the old one first.
+        // However, for safety (in case upload fails), we usually replace the URL 
+        // and let the parent handle cleanup or leave it. 
+        // But if `onDelete` logic is required on replacement, handle it here:
+        if (value && onDelete) {
+             try {
+                 await onDelete(value);
+             } catch (e) {
+                 console.warn("Failed to delete old image before upload", e);
+             }
+        }
+
         try {
             const url = await db.uploadImage(file);
             onChange(url);
@@ -55,8 +70,20 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         }
     };
 
-    const handleRemove = (e: React.MouseEvent) => {
+    const handleRemove = async (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent triggering upload click
+        
+        if (value && onDelete) {
+            setIsUploading(true);
+            try {
+                await onDelete(value);
+            } catch (err) {
+                console.warn("Delete failed", err);
+                // We still clear the UI even if delete fails
+            }
+            setIsUploading(false);
+        }
+        
         onChange('');
     };
 
@@ -113,7 +140,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                         {isUploading ? (
                             <>
                                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-2" />
-                                <span className="text-sm text-blue-600 font-medium">上傳中...</span>
+                                <span className="text-sm text-blue-600 font-medium">處理中...</span>
                             </>
                         ) : (
                             <>

@@ -26,6 +26,7 @@ interface D1Database {
 interface R2Bucket {
   put(key: string, value: any, options?: any): Promise<any>;
   get(key: string): Promise<any>;
+  delete(key: string): Promise<void>;
 }
 
 interface Fetcher {
@@ -115,31 +116,50 @@ export default {
       return handleApiRequest(request, env);
     }
     
-    // 2. R2 Image Upload Handling
-    if (url.pathname === '/api/upload' && request.method === 'POST') {
-      try {
-        const formData = await request.formData();
-        const file = formData.get('file');
-
-        if (!file || !(file instanceof File)) {
-          return new Response('No file uploaded', { status: 400 });
+    // 2. R2 Image Upload/Delete Handling
+    if (url.pathname === '/api/upload') {
+      // DELETE Method
+      if (request.method === 'DELETE') {
+        const filename = url.searchParams.get('filename');
+        if (!filename) {
+          return new Response('Missing filename', { status: 400 });
         }
+        try {
+          await env.BUCKET.delete(filename);
+          return new Response(JSON.stringify({ success: true }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        } catch (e: any) {
+          return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+        }
+      }
 
-        const ext = file.name.split('.').pop() || 'jpg';
-        const filename = `${crypto.randomUUID()}.${ext}`;
-        
-        await env.BUCKET.put(filename, file.stream(), {
-          httpMetadata: {
-            contentType: file.type || 'application/octet-stream',
-          },
-        });
+      // POST Method (Upload)
+      if (request.method === 'POST') {
+        try {
+          const formData = await request.formData();
+          const file = formData.get('file');
 
-        // Return the relative URL. The frontend/worker needs to handle /images/filename
-        return new Response(JSON.stringify({ url: `/images/${filename}` }), {
-          headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (e: any) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+          if (!file || !(file instanceof File)) {
+            return new Response('No file uploaded', { status: 400 });
+          }
+
+          const ext = file.name.split('.').pop() || 'jpg';
+          const filename = `${crypto.randomUUID()}.${ext}`;
+          
+          await env.BUCKET.put(filename, file.stream(), {
+            httpMetadata: {
+              contentType: file.type || 'application/octet-stream',
+            },
+          });
+
+          // Return the relative URL. The frontend/worker needs to handle /images/filename
+          return new Response(JSON.stringify({ url: `/images/${filename}` }), {
+            headers: { 'Content-Type': 'application/json' },
+          });
+        } catch (e: any) {
+          return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+        }
       }
     }
 
@@ -222,9 +242,6 @@ export default {
         
         try {
             // Attempt to add 'website' column to SystemConfig if it doesn't exist
-            // SQLite doesn't support IF NOT EXISTS for column adding in all versions simply, 
-            // but D1 usually handles the error gracefully or we catch it.
-            // We'll catch "duplicate column name" error and treat as success.
             try {
                 await env.DB.prepare(`ALTER TABLE ${prefix}SystemConfig ADD COLUMN website TEXT`).run();
             } catch (e: any) {
