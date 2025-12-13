@@ -74,7 +74,7 @@ const generateCreateSQL = (prefix: string) => `
     id TEXT PRIMARY KEY, date TEXT, content TEXT, userId TEXT
   );
   CREATE TABLE IF NOT EXISTS ${prefix}SystemConfig (
-    id TEXT PRIMARY KEY, subjects TEXT, expenseCategories TEXT, classTypes TEXT, appInfo TEXT
+    id TEXT PRIMARY KEY, subjects TEXT, expenseCategories TEXT, classTypes TEXT, appInfo TEXT, website TEXT
   );
   CREATE TABLE IF NOT EXISTS ${prefix}Inquiries (
     id TEXT PRIMARY KEY, name TEXT, phone TEXT, subject TEXT, message TEXT, 
@@ -84,12 +84,13 @@ const generateCreateSQL = (prefix: string) => `
 
 // Helper to generate Seed SQL
 const generateSeedSQL = (prefix: string) => `
-  INSERT OR IGNORE INTO ${prefix}SystemConfig (id, subjects, expenseCategories, classTypes, appInfo) VALUES (
+  INSERT OR IGNORE INTO ${prefix}SystemConfig (id, subjects, expenseCategories, classTypes, appInfo, website) VALUES (
     'main',
     '["鋼琴 (Piano)","小提琴 (Violin)","聲樂 (Vocal)","吉他 (Guitar)","長笛 (Flute)","爵士鼓 (Drums)"]',
     '["教材採購","硬體設備","房租水電","行銷廣告","人事雜支","其他"]',
     '[{"id":"PRIVATE","name":"個別課"},{"id":"SMALL_GROUP","name":"小組課"},{"id":"LARGE_GROUP","name":"團體班"}]',
-    '{"loginTitle":"Huahua Music Class","loginSubtitle":"智慧派課與薪酬管理系統","sidebarTitle":"Huahua Music","sidebarSubtitle":"智慧派課系統"}'
+    '{"loginTitle":"Huahua Music Class","loginSubtitle":"智慧派課與薪酬管理系統","sidebarTitle":"Huahua Music","sidebarSubtitle":"智慧派課系統"}',
+    NULL
   );
 
   INSERT OR IGNORE INTO ${prefix}Users (id, username, password, name, role, permissions, isFirstLogin, teacherId, settings) VALUES (
@@ -98,7 +99,7 @@ const generateSeedSQL = (prefix: string) => `
     'admin',
     '系統管理員',
     'admin',
-    '{"dashboard":{"view":true,"edit":true},"calendar":{"view":true,"edit":true},"students":{"view":true,"edit":true},"teachers":{"view":true,"edit":true},"sales":{"view":true,"edit":true},"expenses":{"view":true,"edit":true},"payroll":{"view":true,"edit":true},"reports":{"view":true,"edit":true},"users":{"view":true,"edit":true},"settings":{"view":true,"edit":true},"test_mode":{"view":true,"edit":true},"inquiries":{"view":true,"edit":true}}',
+    '{"dashboard":{"view":true,"edit":true},"calendar":{"view":true,"edit":true},"students":{"view":true,"edit":true},"teachers":{"view":true,"edit":true},"sales":{"view":true,"edit":true},"expenses":{"view":true,"edit":true},"payroll":{"view":true,"edit":true},"reports":{"view":true,"edit":true},"users":{"view":true,"edit":true},"settings":{"view":true,"edit":true},"test_mode":{"view":true,"edit":true},"inquiries":{"view":true,"edit":true},"website":{"view":true,"edit":true}}',
     0,
     NULL,
     '{"fontSizeScale":1,"spacingMode":"normal"}'
