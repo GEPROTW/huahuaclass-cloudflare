@@ -357,6 +357,22 @@ export const db = {
             throw e;
         }
     },
+    
+    // New: Patch Schema Migration (Add missing 'website' column)
+    async runMigration() {
+        if (useLocalStorage) {
+            console.log("Local Storage Mode: No schema migration needed.");
+            return { success: true, message: "Local Storage Mode (Skipped)" };
+        }
+        try {
+            const res = await fetch(`/api/migrate?mode=${currentMode}`);
+            const data = await res.json();
+            return data;
+        } catch (e: any) {
+            console.error("Migration Failed:", e);
+            throw e;
+        }
+    },
 
     async clearAllData(options: ClearDataOptions) {
         if (options.students) await this.truncate('students');

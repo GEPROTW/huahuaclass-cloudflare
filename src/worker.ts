@@ -215,7 +215,31 @@ export default {
       }
     }
 
-    // 6. Serve Static Assets (with SPA Fallback)
+    // 6. Schema Migration Endpoint (PATCH)
+    if (url.pathname === '/api/migrate') {
+        const mode = url.searchParams.get('mode') || 'production';
+        const prefix = mode === 'test' ? 'Test_' : '';
+        
+        try {
+            // Attempt to add 'website' column to SystemConfig if it doesn't exist
+            // SQLite doesn't support IF NOT EXISTS for column adding in all versions simply, 
+            // but D1 usually handles the error gracefully or we catch it.
+            // We'll catch "duplicate column name" error and treat as success.
+            try {
+                await env.DB.prepare(`ALTER TABLE ${prefix}SystemConfig ADD COLUMN website TEXT`).run();
+            } catch (e: any) {
+                if (!e.message?.includes('duplicate column name')) {
+                    throw e; // Rethrow real errors
+                }
+            }
+            
+            return new Response(JSON.stringify({ success: true, message: 'Schema patched: website column added' }), { headers: {'Content-Type': 'application/json'} });
+        } catch (e: any) {
+            return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: {'Content-Type': 'application/json'} });
+        }
+    }
+
+    // 7. Serve Static Assets (with SPA Fallback)
     // Try to get the static asset
     let response = await env.ASSETS.fetch(request);
 

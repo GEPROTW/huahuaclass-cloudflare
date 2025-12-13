@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { AlertTriangle, RefreshCw, Trash2, Database, X, Loader2, Settings, Monitor, Layout, Type, Save, List, Plus, Music, Tag, Edit, Type as TypeIcon, CheckSquare, Square, Calendar as CalendarIcon, Cloud } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Trash2, Database, X, Loader2, Settings, Monitor, Layout, Type, Save, List, Plus, Music, Tag, Edit, Type as TypeIcon, CheckSquare, Square, Calendar as CalendarIcon, Cloud, Wrench } from 'lucide-react';
 import { AppUser, AppSettings, SystemConfig, ClearDataOptions } from '../types';
+import { db } from '../services/db'; // Import db service directly for patching
 
 interface SystemInitProps {
     onReset: () => Promise<void>;
@@ -24,6 +25,7 @@ export const SystemInit: React.FC<SystemInitProps> = ({
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
+    const [patchMessage, setPatchMessage] = useState<string | null>(null);
 
     // Clear Selection State
     const [clearOptions, setClearOptions] = useState<ClearDataOptions>({
@@ -82,6 +84,20 @@ export const SystemInit: React.FC<SystemInitProps> = ({
             setSaveMessage("儲存失敗");
         } finally {
             setIsSaving(false);
+        }
+    };
+    
+    const handlePatchSchema = async () => {
+        setIsProcessing(true);
+        setPatchMessage("修復中...");
+        try {
+            const res = await db.runMigration();
+            setPatchMessage(res.success ? "修復成功！官網設定功能已啟用。" : `修復失敗: ${res.error}`);
+        } catch (e: any) {
+            setPatchMessage(`連線錯誤: ${e.message}`);
+        } finally {
+            setIsProcessing(false);
+            setTimeout(() => setPatchMessage(null), 5000);
         }
     };
 
@@ -211,6 +227,7 @@ export const SystemInit: React.FC<SystemInitProps> = ({
 
             {(activeTab === 'ui' || !isAdmin) && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    {/* ... (Existing UI content unchanged) ... */}
                     {isAdmin && (
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                             <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
@@ -364,6 +381,7 @@ export const SystemInit: React.FC<SystemInitProps> = ({
 
             {isAdmin && activeTab === 'custom' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    {/* ... (Existing Custom Params content unchanged) ... */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full">
                             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
@@ -566,12 +584,41 @@ export const SystemInit: React.FC<SystemInitProps> = ({
                             </button>
                         </div>
                     </div>
+                    
+                    {/* Patch Schema Button Section */}
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 text-indigo-600">
+                                <Wrench className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-indigo-900 text-lg">檢查並修復資料庫結構</h4>
+                                <p className="text-indigo-700/80 text-sm mt-1 max-w-lg">
+                                    若您發現官網設定無法儲存，或是圖片上傳後未顯示，可能是資料庫缺少必要欄位。此功能將嘗試補齊缺失的表格結構，不會影響現有資料。
+                                </p>
+                                {patchMessage && (
+                                    <div className="mt-3 text-sm font-bold bg-white/60 px-3 py-1.5 rounded-lg inline-block text-indigo-800 animate-in fade-in">
+                                        {patchMessage}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <button 
+                            onClick={handlePatchSchema}
+                            disabled={isProcessing}
+                            className="whitespace-nowrap px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-md transition-all font-bold flex items-center disabled:opacity-70"
+                        >
+                            {isProcessing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wrench className="w-4 h-4 mr-2" />}
+                            執行結構修復
+                        </button>
+                    </div>
                 </div>
             )}
 
             {confirmType && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full animate-in zoom-in-95 duration-200 relative">
+                        {/* ... (Confirm modal content unchanged) ... */}
                         {!isProcessing && (
                             <button 
                                 onClick={() => setConfirmType(null)} 
