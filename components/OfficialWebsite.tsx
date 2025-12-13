@@ -308,7 +308,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                             </FadeIn>
                             
                             <FadeIn direction="up" delay={200}>
-                                <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
+                                <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 leading-tight mb-6 tracking-tight break-words">
                                     {config.hero.titlePrefix}<br />
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                                         {config.hero.titleHighlight}
@@ -317,7 +317,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                             </FadeIn>
 
                             <FadeIn direction="up" delay={300}>
-                                <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                                <p className="text-base sm:text-lg text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                                     {config.hero.subtitle}
                                 </p>
                             </FadeIn>
@@ -349,13 +349,13 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                             </FadeIn>
                         </div>
                         
-                        <div className="flex-1 relative w-full max-w-[500px] lg:max-w-none perspective-1000 lg:pl-10">
+                        <div className="flex-1 relative w-full max-w-[500px] lg:max-w-none md:perspective-1000 lg:pl-10">
                             <FadeIn direction="right" delay={200}>
-                                <div className="relative rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[4px] md:border-[8px] border-white rotate-0 md:rotate-1 hover:rotate-0 transition-all duration-700 ease-out transform-gpu mx-auto">
+                                <div className="relative rounded-2xl md:rounded-[2.5rem] overflow-hidden shadow-2xl border-4 md:border-8 border-white md:rotate-1 hover:rotate-0 transition-all duration-700 ease-out transform-gpu mx-auto">
                                     <img 
                                         src={config.hero.heroImage} 
                                         alt="Music Class" 
-                                        className="w-full h-auto object-cover transform scale-105 hover:scale-110 transition-transform duration-[1.5s]"
+                                        className="w-full h-auto object-cover transform scale-100 md:scale-105 hover:scale-110 transition-transform duration-[1.5s]"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
                                     <div className="absolute bottom-8 left-8 text-white">
