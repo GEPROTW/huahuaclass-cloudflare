@@ -125,12 +125,12 @@ export default {
           return new Response('No file uploaded', { status: 400 });
         }
 
-        const ext = file.name.split('.').pop();
+        const ext = file.name.split('.').pop() || 'jpg';
         const filename = `${crypto.randomUUID()}.${ext}`;
         
         await env.BUCKET.put(filename, file.stream(), {
           httpMetadata: {
-            contentType: file.type,
+            contentType: file.type || 'application/octet-stream',
           },
         });
 
@@ -146,6 +146,8 @@ export default {
     // 3. R2 Image Serving Handling
     if (url.pathname.startsWith('/images/')) {
       const key = url.pathname.slice(8); // remove '/images/'
+      if (!key) return new Response('Image key missing', { status: 400 });
+
       const object = await env.BUCKET.get(key);
 
       if (!object) {
@@ -155,6 +157,10 @@ export default {
       const headers = new Headers();
       object.writeHttpMetadata(headers);
       headers.set('etag', object.httpEtag);
+      // Ensure Cache-Control is set to avoid re-fetching often
+      if (!headers.has('Cache-Control')) {
+          headers.set('Cache-Control', 'public, max-age=31536000');
+      }
 
       return new Response(object.body, {
         headers,
@@ -266,7 +272,8 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
               const keys = Object.keys(item);
               const placeholders = keys.map(() => '?').join(',');
               const values = Object.values(item);
-              return env.DB.prepare(`INSERT INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`).bind(...values);
+              // Use INSERT OR REPLACE to handle upserts gracefully
+              return env.DB.prepare(`INSERT OR REPLACE INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`).bind(...values);
           });
           await env.DB.batch(stmts);
           return new Response(JSON.stringify({ success: true, count: body.length }), { headers: { 'Content-Type': 'application/json' } });
@@ -275,7 +282,7 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
           const keys = Object.keys(body);
           const placeholders = keys.map(() => '?').join(',');
           const values = Object.values(body);
-          await env.DB.prepare(`INSERT INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`).bind(...values).run();
+          await env.DB.prepare(`INSERT OR REPLACE INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`).bind(...values).run();
           return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
       }
     } 

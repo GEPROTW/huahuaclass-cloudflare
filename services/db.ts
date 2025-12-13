@@ -284,7 +284,16 @@ export const db = {
     },
 
     async saveSystemConfig(config: SystemConfig) {
-        return this.add('system_config', { ...config, id: 'main' });
+        // Use 'update' (PUT) instead of 'add' (POST) to avoid PK collision for 'main'
+        // If 'main' doesn't exist, UPDATE usually fails in SQL, but our API PUT logic requires ID.
+        // However, we initialized the DB with 'main', so PUT is safer.
+        // If for some reason it doesn't exist (fresh wiped DB without init), we catch and try add.
+        try {
+            return await this.update('system_config', { ...config, id: 'main' });
+        } catch (e) {
+            // Fallback to add if update fails (e.g. record doesn't exist yet)
+            return await this.add('system_config', { ...config, id: 'main' });
+        }
     },
 
     async initializeData(forceReset = false) {
@@ -339,6 +348,7 @@ export const db = {
                 await this.batchAdd('users', MOCK_USERS);
                 await this.batchAdd('availabilities', MOCK_AVAILABILITIES);
                 await this.batchAdd('inquiries', MOCK_INQUIRIES);
+                // For system_config, we use add here because reset clears the table
                 await this.add('system_config', DEFAULT_SYSTEM_CONFIG);
             }
             return true;
