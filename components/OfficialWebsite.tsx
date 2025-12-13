@@ -308,7 +308,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                             </FadeIn>
                             
                             <FadeIn direction="up" delay={200}>
-                                <h1 className="text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
+                                <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
                                     {config.hero.titlePrefix}<br />
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                                         {config.hero.titleHighlight}
@@ -351,7 +351,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                         
                         <div className="flex-1 relative w-full max-w-[500px] lg:max-w-none perspective-1000 lg:pl-10">
                             <FadeIn direction="right" delay={200}>
-                                <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-[8px] border-white rotate-1 hover:rotate-0 transition-all duration-700 ease-out transform-gpu">
+                                <div className="relative rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl border-[4px] md:border-[8px] border-white rotate-0 md:rotate-1 hover:rotate-0 transition-all duration-700 ease-out transform-gpu mx-auto">
                                     <img 
                                         src={config.hero.heroImage} 
                                         alt="Music Class" 
