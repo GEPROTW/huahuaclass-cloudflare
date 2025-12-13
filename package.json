@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && npx esbuild src/worker.ts --bundle --outfile=dist/_worker.js --format=esm --platform=browser --external:cloudflare:*",
     "preview": "vite preview"
   },
   "dependencies": {
