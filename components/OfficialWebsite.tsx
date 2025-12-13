@@ -64,6 +64,13 @@ const FadeIn: React.FC<FadeInProps> = ({
     );
 };
 
+// LINE Logo Component
+const LineLogo = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fillRule="evenodd" clipRule="evenodd" d="M12.0002 4C7.50209 4 3.8291 7.228 3.8291 11.237C3.8291 13.627 5.1631 15.753 7.2291 16.993C7.1291 17.362 6.8921 18.232 6.8681 18.334C6.8681 18.334 6.8091 18.496 6.9071 18.577C7.0051 18.658 7.1341 18.638 7.1341 18.638C7.6201 18.567 9.1721 17.625 9.9671 16.942C10.6271 17.067 11.3061 17.136 12.0002 17.136C16.4982 17.136 20.1712 13.908 20.1712 9.90002C20.1712 5.89102 16.4982 4 12.0002 4Z"/>
+    </svg>
+);
+
 interface OfficialWebsiteProps {
     teachers: Teacher[];
     systemConfig: SystemConfig;
@@ -76,6 +83,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
     const [scrolled, setScrolled] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [showLineBubble, setShowLineBubble] = useState(true);
     
     // Form State
     const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
@@ -196,6 +204,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
     const contactEmail = getContactInfo('email');
     const contactAddress = getContactInfo('address');
     const contactOpenHours = getContactInfo('openHours');
+    const lineUrl = config.contact.info.lineUrl; // Direct string access for LINE URL
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
@@ -882,6 +891,41 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                     </div>
                 </div>
             </footer>
+
+            {/* Floating LINE Button - Only Show if lineUrl is configured */}
+            {lineUrl && (
+                <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 group">
+                    {/* Speech Bubble */}
+                    {showLineBubble && (
+                        <div className="bg-white px-4 py-2.5 rounded-2xl shadow-xl border border-slate-100 mb-1 relative animate-bounce-slow origin-bottom-right transition-opacity duration-300 max-w-[200px]">
+                            <span className="text-slate-800 text-sm font-bold leading-tight block">獲取最新課程消息！</span>
+                            <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white transform rotate-45 border-r border-b border-slate-100"></div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowLineBubble(false);
+                                }}
+                                className="absolute -top-2 -left-2 bg-slate-200 text-slate-500 rounded-full p-0.5 hover:bg-slate-300 hover:text-slate-700 transition-colors"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Main Button */}
+                    <a
+                        href={lineUrl} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-[#06C755] hover:bg-[#05b64d] text-white p-1 rounded-full shadow-lg shadow-green-500/30 transition-all duration-300 transform hover:scale-105 flex items-center pr-5 group"
+                    >
+                        <div className="w-12 h-12 flex items-center justify-center bg-white/20 rounded-full mr-3 backdrop-blur-sm">
+                             <LineLogo />
+                        </div>
+                        <span className="font-bold text-base tracking-wide">加入官方LINE</span>
+                    </a>
+                </div>
+            )}
 
             {/* Image Lightbox */}
             {selectedImage && (

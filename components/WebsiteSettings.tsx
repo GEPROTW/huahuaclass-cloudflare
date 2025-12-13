@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SystemConfig, WebsiteConfig, WebsitePricingItem, WebsiteFaqItem, WebsiteFeatureItem, Teacher, WebsiteCourseItem, WebsiteTeacherConfig, WebsiteTestimonialItem, WebsiteGalleryItem, WebsiteContactItem } from '../types';
 import { DEFAULT_WEBSITE_CONFIG } from '../constants';
-import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star, UserPlus, Search } from 'lucide-react';
+import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star, UserPlus, Search, Link } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { db } from '../services/db';
 
@@ -43,7 +43,8 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                     email: { value: info.email, visible: true },
                     address: { value: info.address, visible: true },
                     openHours: { value: info.openHours, visible: true },
-                    mapUrl: info.mapUrl 
+                    mapUrl: info.mapUrl,
+                    lineUrl: info.lineUrl
                 };
             }
 
@@ -294,7 +295,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
     };
 
     // Contact Update Helper
-    const updateContactInfo = (key: keyof Omit<typeof config.contact.info, 'mapUrl'>, field: keyof WebsiteContactItem, value: any) => {
+    const updateContactInfo = (key: keyof Omit<typeof config.contact.info, 'mapUrl' | 'lineUrl'>, field: keyof WebsiteContactItem, value: any) => {
         setConfig(prev => ({
             ...prev,
             contact: {
@@ -305,6 +306,20 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         ...prev.contact.info[key],
                         [field]: value
                     }
+                }
+            }
+        }));
+    };
+
+    // Helper for simple string fields in contact info (mapUrl, lineUrl)
+    const updateContactStringField = (key: 'mapUrl' | 'lineUrl', value: string) => {
+        setConfig(prev => ({
+            ...prev,
+            contact: {
+                ...prev.contact,
+                info: {
+                    ...prev.contact.info,
+                    [key]: value
                 }
             }
         }));
@@ -547,8 +562,10 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
+                    {/* ... (Other Tabs Unchanged) ... */}
                     {activeTab === 'courses' && (
                         <div className="space-y-6">
+                            {/* ... (Existing Courses Code) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">課程介紹設定</h3>
                                 <div className="flex items-center gap-2">
@@ -603,6 +620,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                     {/* --- TEACHERS SECTION --- */}
                     {activeTab === 'teachers' && (
                         <div className="space-y-6">
+                            {/* ... (Existing Teachers Code) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">師資團隊設定</h3>
                                 <div className="flex items-center gap-2">
@@ -735,9 +753,10 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* ... [TESTIMONIALS, PRICING, FAQ, GALLERY, CONTACT - UNCHANGED] ... */}
+                    {/* ... [TESTIMONIALS, PRICING, FAQ, GALLERY - UNCHANGED] ... */}
                     {activeTab === 'testimonials' && (
                         <div className="space-y-6">
+                            {/* ... (Existing Testimonials Code) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">好評推薦設定</h3>
                                 <div className="flex items-center gap-2">
@@ -830,6 +849,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
 
                     {activeTab === 'pricing' && (
                         <div className="space-y-6">
+                            {/* ... (Existing Pricing Code) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">收費方案設定</h3>
                                 <div className="flex items-center gap-2">
@@ -906,6 +926,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
 
                     {activeTab === 'faq' && (
                         <div className="space-y-6">
+                            {/* ... (Existing FAQ Code) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">常見問答設定</h3>
                                 <div className="flex items-center gap-2">
@@ -968,6 +989,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
 
                     {activeTab === 'gallery' && (
                         <div className="space-y-6">
+                            {/* ... (Existing Gallery Code) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">相簿圖片連結</h3>
                                 <div className="flex items-center gap-2">
@@ -1038,7 +1060,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* ... [CONTACT SECTION - UNCHANGED] ... */}
+                    {/* --- CONTACT SECTION --- */}
                     {activeTab === 'contact' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -1110,6 +1132,23 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                         </button>
                                     </div>
                                     <input type="text" value={config.contact.info.openHours.value} onChange={(e) => updateContactInfo('openHours', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.openHours.visible ? 'bg-slate-100 text-slate-500' : ''}`} />
+                                </div>
+                                <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-2">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center">
+                                        <Link className="w-4 h-4 mr-1 text-green-600" />
+                                        官方 LINE 連結
+                                    </label>
+                                    <div className="relative">
+                                        <input 
+                                            type="text" 
+                                            value={config.contact.info.lineUrl || ''} 
+                                            onChange={(e) => updateContactStringField('lineUrl', e.target.value)} 
+                                            className="w-full px-4 py-2 pl-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" 
+                                            placeholder="https://line.me/..."
+                                        />
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#06C755] rounded-full flex items-center justify-center text-[8px] text-white font-bold pointer-events-none">L</div>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-1">若留空則不顯示前台的浮動按鈕。</p>
                                 </div>
                             </div>
                         </div>

@@ -218,6 +218,7 @@ export interface WebsiteContactInfo {
     address: WebsiteContactItem;
     openHours: WebsiteContactItem;
     mapUrl?: string; // Optional embedded map URL (kept as string for now, usually just one field)
+    lineUrl?: string; // New: Official LINE Account Link
 }
 
 export interface WebsiteConfig {

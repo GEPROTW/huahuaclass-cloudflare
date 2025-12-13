@@ -125,7 +125,8 @@ export const DEFAULT_WEBSITE_CONFIG: WebsiteConfig = {
             phone: { value: "(02) 2345-6789", visible: true },
             email: { value: "info@huahuamusic.com", visible: true },
             address: { value: "台北市信義區音樂路 123 號", visible: true },
-            openHours: { value: "週一至週日 10:00 - 21:00", visible: true }
+            openHours: { value: "週一至週日 10:00 - 21:00", visible: true },
+            lineUrl: "https://line.me/"
         }
     }
 };
