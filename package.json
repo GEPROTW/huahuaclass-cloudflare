@@ -1,3 +1,4 @@
+
 {
   "name": "eduflow-system",
   "private": true,
@@ -5,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && npx esbuild src/worker.ts --bundle --outfile=dist/_worker.js --format=esm --platform=browser --external:cloudflare:*",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
