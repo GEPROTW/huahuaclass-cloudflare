@@ -504,11 +504,11 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
 
                                 return (
                                 <FadeIn key={teacher.id} direction="up" delay={idx * 100}>
-                                    <div className="group relative overflow-hidden rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 bg-white border border-slate-100">
+                                    <div className="group relative overflow-hidden rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 bg-white border border-slate-100 h-full">
                                         <div className={`aspect-[3/4] ${!imageUrl ? teacher.color.replace('text-', 'bg-').split(' ')[0] : 'bg-slate-100'} bg-opacity-20 relative overflow-hidden`}>
                                             <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-300">
                                                 {imageUrl ? (
-                                                    <img src={imageUrl} alt={teacher.name} className="w-full h-full object-cover" />
+                                                    <img src={imageUrl} alt={teacher.name} className="w-full h-full object-cover object-top" />
                                                 ) : (
                                                     <span className="text-8xl font-bold opacity-20">{teacher.name[0]}</span>
                                                 )}
@@ -546,18 +546,23 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                             </div>
                         </FadeIn>
                         
-                        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+                        {/* Changed from columns-1 (Masonry) to Grid for fixed aspect ratio */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {displayedGallery.map((item, idx) => {
                                 // Compatible with both string (legacy) and object
                                 const src = typeof item === 'string' ? item : item.url;
                                 return (
                                     <FadeIn key={idx} direction="up" delay={idx * 100}>
                                         <div 
-                                            className="break-inside-avoid relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-zoom-in"
+                                            className="relative group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-zoom-in aspect-video bg-slate-100"
                                             onClick={() => setSelectedImage(src)}
                                         >
-                                            <img src={src} alt="Gallery" className="w-full h-auto transform group-hover:scale-110 transition-transform duration-700" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <img 
+                                                src={src} 
+                                                alt="Gallery" 
+                                                className="w-full h-full object-cover absolute inset-0 transform group-hover:scale-110 transition-transform duration-700" 
+                                            />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                                                 <ImageIcon className="text-white w-8 h-8 opacity-80" />
                                             </div>
                                         </div>

@@ -302,8 +302,8 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
     ];
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 pb-20">
-            <div className="flex justify-between items-center">
+        <div className="h-full flex flex-col space-y-6">
+            <div className="flex justify-between items-center shrink-0">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">官方網站設定</h2>
                     <p className="text-sm text-gray-500">管理前台首頁的內容、圖片與顯示狀態</p>
@@ -318,9 +318,9 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                 </button>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row flex-1 min-h-0">
                 {/* Tabs */}
-                <div className="w-full md:w-64 bg-slate-50 border-r border-slate-200 flex flex-row md:flex-col overflow-x-auto md:overflow-visible">
+                <div className="w-full md:w-64 bg-slate-50 border-r border-slate-200 flex flex-row md:flex-col overflow-x-auto md:overflow-visible shrink-0">
                     {[
                         { id: 'hero', label: '首頁主視覺', icon: Globe },
                         { id: 'features', label: '特色介紹', icon: Layout },
@@ -348,13 +348,13 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar h-[calc(100vh-250px)]">
+                <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar">
                     
                     {/* --- HERO SECTION --- */}
                     {activeTab === 'hero' && (
                         <div className="space-y-6">
                             <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">主視覺設定 (Hero Section)</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">標題前綴</label>
                                     <input type="text" value={config.hero.titlePrefix} onChange={e => updateHero('titlePrefix', e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -363,7 +363,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                     <label className="block text-sm font-bold text-slate-700 mb-1">標題重點 (漸層色)</label>
                                     <input type="text" value={config.hero.titleHighlight} onChange={e => updateHero('titleHighlight', e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
-                                <div className="md:col-span-2">
+                                <div className="xl:col-span-2">
                                     <label className="block text-sm font-bold text-slate-700 mb-1">副標題描述</label>
                                     <textarea value={config.hero.subtitle} onChange={e => updateHero('subtitle', e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none" />
                                 </div>
@@ -440,7 +440,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
 
                             <div className="space-y-4">
                                 <label className="block text-sm font-bold text-slate-700">特色項目</label>
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                     {config.features.items.map((item, idx) => {
                                         const SelectedIcon = availableIcons.find(i => i.value === item.icon)?.icon || HelpCircle;
                                         const selectedIconLabel = availableIcons.find(i => i.value === item.icon)?.label || '選擇圖示';
@@ -549,7 +549,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
 
                             <div className="space-y-4">
                                 <p className="text-xs text-slate-500">以下課程項目來自「系統設定 → 授課科目」。您可以在此編輯顯示文字或隱藏個別課程。</p>
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                     {config.courses.items.map((item, idx) => (
                                         <div key={idx} className={`flex gap-4 items-start p-4 rounded-xl border transition-colors ${item.visible ? 'bg-slate-50 border-slate-200' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
                                             <div className="flex-1 space-y-2">
@@ -603,7 +603,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
 
                             <div className="space-y-4">
                                 <p className="text-xs text-slate-500">以下列出系統中的所有教師。勾選以顯示在官網，並可編輯對外顯示的介紹詞。</p>
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                     {config.teachers.items.map((item) => {
                                         const teacher = teachers.find(t => t.id === item.teacherId);
                                         if (!teacher) return null; // Skip if teacher deleted from system
@@ -672,65 +672,67 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                             </div>
 
                             <div className="space-y-4">
-                                {config.testimonials.items.map((item, idx) => (
-                                    <div key={idx} className={`p-4 rounded-xl border transition-colors relative group ${item.visible ? 'bg-slate-50 border-slate-200' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
-                                        <button onClick={() => removeTestimonial(idx)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 pr-8">
-                                            <div>
-                                                <label className="text-xs text-slate-500 mb-1 block">姓名</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={item.name} 
-                                                    onChange={e => updateTestimonial(idx, 'name', e.target.value)}
-                                                    className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-xs text-slate-500 mb-1 block">角色/身份</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={item.role} 
-                                                    onChange={e => updateTestimonial(idx, 'role', e.target.value)}
-                                                    className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm"
-                                                />
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="mb-3">
-                                            <label className="text-xs text-slate-500 mb-1 block">評論內容</label>
-                                            <textarea 
-                                                value={item.content} 
-                                                onChange={e => updateTestimonial(idx, 'content', e.target.value)}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none h-20"
-                                            />
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <label className="text-xs text-slate-500">評分:</label>
-                                                <select 
-                                                    value={item.stars} 
-                                                    onChange={e => updateTestimonial(idx, 'stars', parseInt(e.target.value))}
-                                                    className="bg-white border border-slate-200 rounded px-2 py-1 text-xs"
-                                                >
-                                                    {[1,2,3,4,5].map(s => <option key={s} value={s}>{s} 星</option>)}
-                                                </select>
-                                                <div className="flex">
-                                                    {[...Array(item.stars)].map((_, i) => <Star key={i} className="w-3 h-3 text-yellow-400 fill-current"/>)}
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                    {config.testimonials.items.map((item, idx) => (
+                                        <div key={idx} className={`p-4 rounded-xl border transition-colors relative group ${item.visible ? 'bg-slate-50 border-slate-200' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
+                                            <button onClick={() => removeTestimonial(idx)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                            
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 pr-8">
+                                                <div>
+                                                    <label className="text-xs text-slate-500 mb-1 block">姓名</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={item.name} 
+                                                        onChange={e => updateTestimonial(idx, 'name', e.target.value)}
+                                                        className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs text-slate-500 mb-1 block">角色/身份</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={item.role} 
+                                                        onChange={e => updateTestimonial(idx, 'role', e.target.value)}
+                                                        className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-sm"
+                                                    />
                                                 </div>
                                             </div>
-                                            <button 
-                                                onClick={() => updateTestimonial(idx, 'visible', !item.visible)}
-                                                className={`text-xs px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${item.visible ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-200 text-slate-500 border-slate-300'}`}
-                                            >
-                                                {item.visible ? (<span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示</span>) : (<span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 隱藏</span>)}
-                                            </button>
+                                            
+                                            <div className="mb-3">
+                                                <label className="text-xs text-slate-500 mb-1 block">評論內容</label>
+                                                <textarea 
+                                                    value={item.content} 
+                                                    onChange={e => updateTestimonial(idx, 'content', e.target.value)}
+                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none h-20"
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-xs text-slate-500">評分:</label>
+                                                    <select 
+                                                        value={item.stars} 
+                                                        onChange={e => updateTestimonial(idx, 'stars', parseInt(e.target.value))}
+                                                        className="bg-white border border-slate-200 rounded px-2 py-1 text-xs"
+                                                    >
+                                                        {[1,2,3,4,5].map(s => <option key={s} value={s}>{s} 星</option>)}
+                                                    </select>
+                                                    <div className="flex">
+                                                        {[...Array(item.stars)].map((_, i) => <Star key={i} className="w-3 h-3 text-yellow-400 fill-current"/>)}
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    onClick={() => updateTestimonial(idx, 'visible', !item.visible)}
+                                                    className={`text-xs px-3 py-1 rounded-full border transition-colors flex items-center gap-1 ${item.visible ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-200 text-slate-500 border-slate-300'}`}
+                                                >
+                                                    {item.visible ? (<span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示</span>) : (<span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 隱藏</span>)}
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                                 <button onClick={addTestimonial} className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center font-bold">
                                     <Plus className="w-4 h-4 mr-2" /> 新增評論
                                 </button>
@@ -763,49 +765,51 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                             </div>
 
                             <div className="space-y-4">
-                                {config.pricing.plans.map((plan, pIdx) => (
-                                    <div key={pIdx} className={`border border-slate-200 rounded-xl p-4 transition-colors ${plan.visible !== false ? 'bg-slate-50/50' : 'bg-slate-100 opacity-60'}`}>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex gap-2">
-                                                <input type="text" value={plan.name} onChange={e => updatePricingPlan(pIdx, 'name', e.target.value)} className="font-bold bg-transparent border-b border-transparent focus:border-blue-500 outline-none w-32" />
-                                                <select value={plan.color} onChange={e => updatePricingPlan(pIdx, 'color', e.target.value)} className="text-xs bg-white border border-slate-200 rounded px-1">
-                                                    <option value="blue">藍色</option>
-                                                    <option value="emerald">綠色</option>
-                                                    <option value="amber">橘色</option>
-                                                    <option value="purple">紫色</option>
-                                                </select>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <button 
-                                                    onClick={() => updatePricingPlan(pIdx, 'visible', plan.visible === false ? true : false)}
-                                                    className={`p-1 rounded-md transition-colors ${plan.visible !== false ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
-                                                    title={plan.visible !== false ? "點擊隱藏" : "點擊顯示"}
-                                                >
-                                                    {plan.visible !== false ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
-                                                </button>
-                                                <button onClick={() => removePricingPlan(pIdx)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2 mb-3">
-                                            <input type="text" value={plan.price} onChange={e => updatePricingPlan(pIdx, 'price', e.target.value)} className="flex-1 px-3 py-1.5 border border-slate-200 rounded bg-white text-sm" placeholder="價格" />
-                                            <input type="text" value={plan.unit} onChange={e => updatePricingPlan(pIdx, 'unit', e.target.value)} className="w-20 px-3 py-1.5 border border-slate-200 rounded bg-white text-sm" placeholder="單位" />
-                                        </div>
-                                        <input type="text" value={plan.desc} onChange={e => updatePricingPlan(pIdx, 'desc', e.target.value)} className="w-full px-3 py-1.5 border border-slate-200 rounded bg-white text-sm mb-3" placeholder="描述" />
-                                        
-                                        <div className="space-y-1">
-                                            {plan.features.map((feat, fIdx) => (
-                                                <div key={fIdx} className="flex gap-2 items-center">
-                                                    <div className="w-1.5 h-1.5 bg-slate-300 rounded-full"></div>
-                                                    <input type="text" value={feat} onChange={e => updatePlanFeature(pIdx, fIdx, e.target.value)} className="flex-1 bg-transparent border-b border-transparent focus:border-slate-300 outline-none text-xs text-slate-600" />
-                                                    <button onClick={() => removePlanFeature(pIdx, fIdx)} className="text-slate-300 hover:text-red-400"><X className="w-3 h-3"/></button>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {config.pricing.plans.map((plan, pIdx) => (
+                                        <div key={pIdx} className={`border border-slate-200 rounded-xl p-4 transition-colors ${plan.visible !== false ? 'bg-slate-50/50' : 'bg-slate-100 opacity-60'}`}>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex gap-2">
+                                                    <input type="text" value={plan.name} onChange={e => updatePricingPlan(pIdx, 'name', e.target.value)} className="font-bold bg-transparent border-b border-transparent focus:border-blue-500 outline-none w-32" />
+                                                    <select value={plan.color} onChange={e => updatePricingPlan(pIdx, 'color', e.target.value)} className="text-xs bg-white border border-slate-200 rounded px-1">
+                                                        <option value="blue">藍色</option>
+                                                        <option value="emerald">綠色</option>
+                                                        <option value="amber">橘色</option>
+                                                        <option value="purple">紫色</option>
+                                                    </select>
                                                 </div>
-                                            ))}
-                                            <button onClick={() => addPlanFeature(pIdx)} className="text-xs text-blue-500 hover:text-blue-700 flex items-center mt-2">
-                                                <Plus className="w-3 h-3 mr-1" /> 新增特色
-                                            </button>
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={() => updatePricingPlan(pIdx, 'visible', plan.visible === false ? true : false)}
+                                                        className={`p-1 rounded-md transition-colors ${plan.visible !== false ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
+                                                        title={plan.visible !== false ? "點擊隱藏" : "點擊顯示"}
+                                                    >
+                                                        {plan.visible !== false ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
+                                                    </button>
+                                                    <button onClick={() => removePricingPlan(pIdx)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2 mb-3">
+                                                <input type="text" value={plan.price} onChange={e => updatePricingPlan(pIdx, 'price', e.target.value)} className="flex-1 px-3 py-1.5 border border-slate-200 rounded bg-white text-sm" placeholder="價格" />
+                                                <input type="text" value={plan.unit} onChange={e => updatePricingPlan(pIdx, 'unit', e.target.value)} className="w-20 px-3 py-1.5 border border-slate-200 rounded bg-white text-sm" placeholder="單位" />
+                                            </div>
+                                            <input type="text" value={plan.desc} onChange={e => updatePricingPlan(pIdx, 'desc', e.target.value)} className="w-full px-3 py-1.5 border border-slate-200 rounded bg-white text-sm mb-3" placeholder="描述" />
+                                            
+                                            <div className="space-y-1">
+                                                {plan.features.map((feat, fIdx) => (
+                                                    <div key={fIdx} className="flex gap-2 items-center">
+                                                        <div className="w-1.5 h-1.5 bg-slate-300 rounded-full"></div>
+                                                        <input type="text" value={feat} onChange={e => updatePlanFeature(pIdx, fIdx, e.target.value)} className="flex-1 bg-transparent border-b border-transparent focus:border-slate-300 outline-none text-xs text-slate-600" />
+                                                        <button onClick={() => removePlanFeature(pIdx, fIdx)} className="text-slate-300 hover:text-red-400"><X className="w-3 h-3"/></button>
+                                                    </div>
+                                                ))}
+                                                <button onClick={() => addPlanFeature(pIdx)} className="text-xs text-blue-500 hover:text-blue-700 flex items-center mt-2">
+                                                    <Plus className="w-3 h-3 mr-1" /> 新增特色
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                                 <button onClick={addPricingPlan} className="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center font-bold">
                                     <Plus className="w-4 h-4 mr-2" /> 新增方案
                                 </button>
@@ -900,7 +904,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {config.gallery.images.map((img, idx) => {
                                     // Handle string vs object compatibility
                                     const imgUrl = typeof img === 'string' ? img : img.url;
