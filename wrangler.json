@@ -1,8 +1,11 @@
 
 {
   "name": "calss-cloudflare",
+  "main": "src/worker.ts",
   "compatibility_date": "2024-09-23",
-  "pages_build_output_dir": "./dist",
+  "assets": {
+    "directory": "./dist"
+  },
   "d1_databases": [
     {
       "binding": "DB",
