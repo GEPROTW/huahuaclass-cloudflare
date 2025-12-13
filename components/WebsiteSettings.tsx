@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SystemConfig, WebsiteConfig, WebsitePricingItem, WebsiteFaqItem, WebsiteFeatureItem, Teacher, WebsiteCourseItem, WebsiteTeacherConfig, WebsiteTestimonialItem, WebsiteGalleryItem, WebsiteContactItem } from '../types';
 import { DEFAULT_WEBSITE_CONFIG } from '../constants';
-import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star } from 'lucide-react';
+import { Save, Loader2, Globe, Layout, Image as ImageIcon, MessageSquare, DollarSign, Plus, Trash2, ChevronDown, ChevronUp, Eye, EyeOff, X, Users, Award, Sparkles, Calendar, Music, HelpCircle, Zap, Star, UserPlus, Search } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { db } from '../services/db';
 
@@ -21,6 +21,12 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
     // Dropdown State for Features
     const [openFeatureDropdown, setOpenFeatureDropdown] = useState<number | null>(null);
     const featureDropdownRef = useRef<HTMLDivElement>(null);
+
+    // New Teacher Selection State
+    const [newTeacherId, setNewTeacherId] = useState('');
+    const [teacherSearchTerm, setTeacherSearchTerm] = useState('');
+    const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
+    const teacherSearchRef = useRef<HTMLDivElement>(null);
 
     // Sync state if prop changes
     useEffect(() => {
@@ -51,6 +57,9 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
             if (featureDropdownRef.current && !featureDropdownRef.current.contains(event.target as Node)) {
                 setOpenFeatureDropdown(null);
             }
+            if (teacherSearchRef.current && !teacherSearchRef.current.contains(event.target as Node)) {
+                setShowTeacherDropdown(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -78,29 +87,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
             setConfig(prev => ({ ...prev, courses: { ...prev.courses, items: newItems } }));
         }
     }, [systemConfig.subjects]); // Run when subjects list changes
-
-    // Ensure teachers are synced with Teacher List
-    useEffect(() => {
-        const currentTeacherConfigs = config.teachers.items || [];
-        let needsUpdate = false;
-        const newItems = [...currentTeacherConfigs];
-
-        teachers.forEach(t => {
-            if (!newItems.find(i => i.teacherId === t.id)) {
-                newItems.push({
-                    teacherId: t.id,
-                    visible: true, // Default visible or false? Default to visible for now to populate.
-                    customBio: "教學經驗豐富，擅長引導學生建立自信。"
-                });
-                needsUpdate = true;
-            }
-        });
-
-        if (needsUpdate) {
-            setConfig(prev => ({ ...prev, teachers: { ...prev.teachers, items: newItems } }));
-        }
-    }, [teachers]);
-
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -156,11 +142,36 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
         setConfig(prev => ({ ...prev, courses: { ...prev.courses, items: newItems } }));
     };
 
-    // Teachers (Special: Only update bio/visibility)
+    // Teachers
     const updateTeacherItem = (teacherId: string, field: keyof WebsiteTeacherConfig, value: any) => {
         const newItems = config.teachers.items.map(item => 
             item.teacherId === teacherId ? { ...item, [field]: value } : item
         );
+        setConfig(prev => ({ ...prev, teachers: { ...prev.teachers, items: newItems } }));
+    };
+
+    const handleAddTeacher = () => {
+        if (!newTeacherId) return;
+        const newTeacher: WebsiteTeacherConfig = {
+            teacherId: newTeacherId,
+            visible: true,
+            customBio: "教學經驗豐富，擅長引導學生建立自信。",
+            imageUrl: ""
+        };
+        setConfig(prev => ({
+            ...prev,
+            teachers: {
+                ...prev.teachers,
+                items: [...prev.teachers.items, newTeacher]
+            }
+        }));
+        setNewTeacherId(''); // Reset selection
+        setTeacherSearchTerm(''); // Reset search term
+    };
+
+    const handleRemoveTeacher = (index: number) => {
+        const newItems = [...config.teachers.items];
+        newItems.splice(index, 1);
         setConfig(prev => ({ ...prev, teachers: { ...prev.teachers, items: newItems } }));
     };
 
@@ -310,6 +321,14 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
         { value: 'Zap', label: '閃電/效率', icon: Zap },
     ];
 
+    // Filter available teachers for dropdown (those not yet added)
+    const currentTeacherIds = config.teachers.items.map(i => i.teacherId);
+    const availableTeachers = teachers.filter(t => !currentTeacherIds.includes(t.id));
+    const filteredAvailableTeachers = availableTeachers.filter(t => 
+        t.name.toLowerCase().includes(teacherSearchTerm.toLowerCase()) || 
+        t.phone.includes(teacherSearchTerm)
+    );
+
     return (
         <div className="h-full flex flex-col space-y-6">
             <div className="flex justify-between items-center shrink-0">
@@ -359,7 +378,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                 {/* Content Area */}
                 <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar">
                     
-                    {/* --- HERO SECTION --- */}
+                    {/* ... [HERO, FEATURES, COURSES SECTIONS - UNCHANGED] ... */}
                     {activeTab === 'hero' && (
                         <div className="space-y-6">
                             <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">主視覺設定 (Hero Section)</h3>
@@ -424,7 +443,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* --- FEATURES SECTION --- */}
                     {activeTab === 'features' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -459,8 +477,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             <div key={idx} className={`flex gap-4 items-start p-4 rounded-xl border transition-colors ${item.visible !== false ? 'bg-slate-50 border-slate-200' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
                                                 <div className="w-32 flex-shrink-0 relative">
                                                     <label className="text-xs text-slate-500 mb-1 block">圖示</label>
-                                                    
-                                                    {/* Custom Dropdown Trigger */}
                                                     <button 
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -474,8 +490,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                         </div>
                                                         <ChevronDown className="w-3 h-3 text-slate-400" />
                                                     </button>
-
-                                                    {/* Dropdown Menu */}
                                                     {openFeatureDropdown === idx && (
                                                         <div ref={featureDropdownRef} className="absolute top-full left-0 w-48 mt-1 bg-white rounded-lg shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                                                             {availableIcons.map(iconDef => (
@@ -533,7 +547,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* --- COURSES SECTION --- */}
                     {activeTab === 'courses' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -612,14 +625,71 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                             </div>
 
                             <div className="space-y-4">
-                                <p className="text-xs text-slate-500">以下列出系統中的所有教師。勾選以顯示在官網，並可編輯對外顯示的介紹詞。</p>
+                                <p className="text-xs text-slate-500">
+                                    請從下方選擇系統中已有的教師，加入至官網首頁顯示清單。您可以為每位教師設定專屬的照片與簡介。
+                                </p>
+                                
+                                {/* Add Teacher Selector with Search */}
+                                <div className="flex gap-2 items-end bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div className="flex-1 relative" ref={teacherSearchRef}>
+                                        <label className="text-xs font-bold text-slate-500 mb-1 block">選擇要加入的教師</label>
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+                                            <input 
+                                                type="text" 
+                                                value={teacherSearchTerm}
+                                                onChange={(e) => {
+                                                    setTeacherSearchTerm(e.target.value);
+                                                    setShowTeacherDropdown(true);
+                                                    setNewTeacherId(''); // Reset ID if user types
+                                                }}
+                                                onFocus={() => setShowTeacherDropdown(true)}
+                                                placeholder={newTeacherId ? teachers.find(t => t.id === newTeacherId)?.name : "搜尋教師姓名或電話..."}
+                                                className="w-full h-10 pl-10 pr-8 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all"
+                                            />
+                                            {showTeacherDropdown && (
+                                                <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-slate-100 max-h-60 overflow-y-auto z-50">
+                                                    {filteredAvailableTeachers.length > 0 ? (
+                                                        filteredAvailableTeachers.map(t => (
+                                                            <div 
+                                                                key={t.id}
+                                                                onClick={() => {
+                                                                    setNewTeacherId(t.id);
+                                                                    setTeacherSearchTerm(t.name);
+                                                                    setShowTeacherDropdown(false);
+                                                                }}
+                                                                className="px-4 py-2 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 border-b border-slate-50 last:border-0 flex justify-between items-center"
+                                                            >
+                                                                <span>{t.name}</span>
+                                                                <span className="text-xs text-slate-400">{t.phone}</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="px-4 py-3 text-center text-xs text-slate-400">
+                                                            無符合的教師 (或已加入)
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={handleAddTeacher}
+                                        disabled={!newTeacherId}
+                                        className="h-10 px-4 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center transition-colors"
+                                    >
+                                        <UserPlus className="w-4 h-4 mr-2" />
+                                        加入列表
+                                    </button>
+                                </div>
+
                                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                    {config.teachers.items.map((item) => {
+                                    {config.teachers.items.map((item, idx) => {
                                         const teacher = teachers.find(t => t.id === item.teacherId);
                                         if (!teacher) return null; // Skip if teacher deleted from system
 
                                         return (
-                                            <div key={item.teacherId} className={`flex gap-4 items-start p-4 rounded-xl border transition-colors ${item.visible ? 'bg-slate-50 border-slate-200' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
+                                            <div key={item.teacherId} className={`flex gap-4 items-start p-4 rounded-xl border transition-colors ${item.visible !== false ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-100 border-slate-200 opacity-60'}`}>
                                                 <div className="w-24 flex-shrink-0">
                                                     {/* Integrated Image Uploader for Teachers */}
                                                     <ImageUploader 
@@ -636,10 +706,11 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                     <div className="flex items-center justify-between">
                                                         <span className="font-bold text-slate-800">{teacher.name}</span>
                                                         <button 
-                                                            onClick={() => updateTeacherItem(item.teacherId, 'visible', !item.visible)}
-                                                            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors ${item.visible ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-slate-200 text-slate-500 border-slate-300'}`}
+                                                            onClick={() => handleRemoveTeacher(idx)}
+                                                            className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                                                            title="從列表移除"
                                                         >
-                                                            {item.visible ? (<span className="flex items-center gap-1"><Eye className="w-3 h-3"/> 顯示中</span>) : (<span className="flex items-center gap-1"><EyeOff className="w-3 h-3"/> 已隱藏</span>)}
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </div>
                                                     <input 
@@ -654,11 +725,17 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                         );
                                     })}
                                 </div>
+                                
+                                {config.teachers.items.length === 0 && (
+                                    <div className="text-center py-8 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                        尚無設定顯示的教師，請從上方選單加入。
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
 
-                    {/* --- TESTIMONIALS SECTION --- */}
+                    {/* ... [TESTIMONIALS, PRICING, FAQ, GALLERY, CONTACT - UNCHANGED] ... */}
                     {activeTab === 'testimonials' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -751,7 +828,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* --- PRICING SECTION --- */}
                     {activeTab === 'pricing' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -828,7 +904,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* --- FAQ SECTION --- */}
                     {activeTab === 'faq' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -891,7 +966,6 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* --- GALLERY SECTION --- */}
                     {activeTab === 'gallery' && (
                         <div className="space-y-6">
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
@@ -964,10 +1038,9 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                         </div>
                     )}
 
-                    {/* --- CONTACT SECTION --- */}
+                    {/* ... [CONTACT SECTION - UNCHANGED] ... */}
                     {activeTab === 'contact' && (
                         <div className="space-y-6">
-                            {/* ... (Existing Contact Section) ... */}
                             <div className="flex justify-between items-center border-b border-slate-100 pb-2 mb-4">
                                 <h3 className="text-lg font-bold text-slate-800">聯絡資訊設定</h3>
                                 <div className="flex items-center gap-2">

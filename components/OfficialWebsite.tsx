@@ -145,17 +145,18 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
         }
     };
 
-    // Filter teachers based on config visibility
-    // Fix: Ensure we actually have configured items before filtering, otherwise fallback to default behavior (slice 0-4)
-    const hasConfiguredTeachers = config.teachers?.items && config.teachers.items.length > 0;
-    
-    const visibleTeacherIds = hasConfiguredTeachers 
-        ? config.teachers.items.filter(i => i.visible !== false).map(i => i.teacherId)
-        : [];
-
-    const displayedTeachers = hasConfiguredTeachers 
-        ? teachers.filter(t => visibleTeacherIds.includes(t.id))
-        : teachers.slice(0, 4);
+    // Strict Teacher Display Logic
+    // Only display teachers present in the config list
+    const displayedTeachers = (config.teachers?.items || [])
+        .map(item => {
+            const teacherData = teachers.find(t => t.id === item.teacherId);
+            if (!teacherData) return null; // Skip if teacher deleted from system
+            return {
+                ...teacherData,
+                config: item
+            };
+        })
+        .filter((t): t is (Teacher & { config: any }) => t !== null && t.config.visible !== false);
 
     // Get courses from config or fallback to system subjects
     const displayedCourses = config.courses?.items && config.courses.items.length > 0 
@@ -368,7 +369,6 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <FadeIn direction="up" delay={0}>
                             <div className="text-center max-w-3xl mx-auto mb-16">
-                                <span className="text-blue-600 font-bold tracking-wider text-xs uppercase mb-2 block bg-blue-50 px-3 py-1 rounded-full w-fit mx-auto">Why Choose Us</span>
                                 <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-6">{config.features.title}</h2>
                                 <p className="text-slate-600 text-lg">{config.features.subtitle}</p>
                             </div>
@@ -496,40 +496,46 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                         </FadeIn>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {displayedTeachers.map((teacher, idx) => {
-                                // Find custom config if available
-                                const teacherConfig = config.teachers.items?.find(i => i.teacherId === teacher.id);
-                                const bio = teacherConfig?.customBio || "教學經驗豐富，擅長引導學生建立自信。";
-                                const imageUrl = teacherConfig?.imageUrl;
+                            {displayedTeachers.length > 0 ? (
+                                displayedTeachers.map((teacher, idx) => {
+                                    // Use config data directly
+                                    const teacherConfig = teacher.config;
+                                    const bio = teacherConfig?.customBio || "教學經驗豐富，擅長引導學生建立自信。";
+                                    const imageUrl = teacherConfig?.imageUrl;
 
-                                return (
-                                <FadeIn key={teacher.id} direction="up" delay={idx * 100}>
-                                    <div className="group relative overflow-hidden rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 bg-white border border-slate-100 h-full">
-                                        <div className={`aspect-[3/4] ${!imageUrl ? teacher.color.replace('text-', 'bg-').split(' ')[0] : 'bg-slate-100'} bg-opacity-20 relative overflow-hidden`}>
-                                            <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-300">
-                                                {imageUrl ? (
-                                                    <img src={imageUrl} alt={teacher.name} className="w-full h-full object-cover object-top" />
-                                                ) : (
-                                                    <span className="text-8xl font-bold opacity-20">{teacher.name[0]}</span>
-                                                )}
-                                            </div>
-                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                                            
-                                            <div className="absolute bottom-0 left-0 p-6 text-white w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                                <div className="border-l-4 border-blue-500 pl-4 mb-2">
-                                                    <h3 className="text-2xl font-bold">{teacher.name}</h3>
-                                                    <p className="text-white/80 text-sm font-medium uppercase tracking-wider">資深音樂教師</p>
+                                    return (
+                                    <FadeIn key={teacher.id} direction="up" delay={idx * 100}>
+                                        <div className="group relative overflow-hidden rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 bg-white border border-slate-100 h-full">
+                                            <div className={`aspect-[3/4] ${!imageUrl ? teacher.color.replace('text-', 'bg-').split(' ')[0] : 'bg-slate-100'} bg-opacity-20 relative overflow-hidden`}>
+                                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-slate-300">
+                                                    {imageUrl ? (
+                                                        <img src={imageUrl} alt={teacher.name} className="w-full h-full object-cover object-top" />
+                                                    ) : (
+                                                        <span className="text-8xl font-bold opacity-20">{teacher.name[0]}</span>
+                                                    )}
                                                 </div>
-                                                <div className="h-0 group-hover:h-auto overflow-hidden transition-all opacity-0 group-hover:opacity-100 duration-500 delay-100">
-                                                    <p className="text-sm text-white/70 mt-3 leading-relaxed">
-                                                        {bio}
-                                                    </p>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
+                                                
+                                                <div className="absolute bottom-0 left-0 p-6 text-white w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                                    <div className="border-l-4 border-blue-500 pl-4 mb-2">
+                                                        <h3 className="text-2xl font-bold">{teacher.name}</h3>
+                                                        <p className="text-white/80 text-sm font-medium uppercase tracking-wider">資深音樂教師</p>
+                                                    </div>
+                                                    <div className="h-0 group-hover:h-auto overflow-hidden transition-all opacity-0 group-hover:opacity-100 duration-500 delay-100">
+                                                        <p className="text-sm text-white/70 mt-3 leading-relaxed">
+                                                            {bio}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </FadeIn>
-                            );})}
+                                    </FadeIn>
+                                );})
+                            ) : (
+                                <div className="col-span-full text-center py-10 text-slate-400">
+                                    <p>目前暫無師資介紹，請稍後再訪。</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>

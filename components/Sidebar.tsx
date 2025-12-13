@@ -79,8 +79,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'expenses', label: '成本統計', icon: Receipt },
         { id: 'payroll', label: '薪酬結算', icon: Calculator },
         { id: 'reports', label: '詳細報表', icon: BarChart2 },
-        { id: 'website', label: '官網設定', icon: Globe }, // New Item
         { id: 'users', label: '權限管理', icon: Shield },
+        { id: 'website', label: '官網設定', icon: Globe }, 
         { id: 'settings', label: '系統設定', icon: Settings },
     ];
 
