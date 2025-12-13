@@ -313,7 +313,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                     disabled={isSaving}
                     className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md transition-all flex items-center font-bold disabled:opacity-70"
                 >
-                    {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                    {isSaving ? (<Loader2 className="w-4 h-4 mr-2 animate-spin" />) : (<Save className="w-4 h-4 mr-2" />)}
                     {saveMessage || '儲存發布'}
                 </button>
             </div>
@@ -422,7 +422,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.features.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('features')} className={`p-1.5 rounded-lg transition-colors ${config.features.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.features.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.features.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -506,7 +506,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                         className={`p-1.5 rounded-lg transition-colors self-center ${item.visible !== false ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                                         title={item.visible !== false ? "點擊隱藏" : "點擊顯示"}
                                                     >
-                                                        {item.visible !== false ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                                        {item.visible !== false ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                                     </button>
                                                     <button onClick={() => removeFeatureItem(idx)} className="text-slate-400 hover:text-red-500 p-1 self-center">
                                                         <Trash2 className="w-5 h-5" />
@@ -531,7 +531,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.courses.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('courses')} className={`p-1.5 rounded-lg transition-colors ${config.courses.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.courses.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.courses.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -560,7 +560,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                         className={`p-1.5 rounded-lg ${item.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                                         title={item.visible ? "點擊隱藏" : "點擊顯示"}
                                                     >
-                                                        {item.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                                        {item.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                                     </button>
                                                 </div>
                                                 <textarea 
@@ -585,7 +585,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.teachers.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('teachers')} className={`p-1.5 rounded-lg transition-colors ${config.teachers.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.teachers.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.teachers.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -655,7 +655,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.testimonials.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('testimonials')} className={`p-1.5 rounded-lg transition-colors ${config.testimonials.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.testimonials.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.testimonials.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -746,7 +746,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.pricing.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('pricing')} className={`p-1.5 rounded-lg transition-colors ${config.pricing.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.pricing.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.pricing.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -781,7 +781,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                     className={`p-1 rounded-md transition-colors ${plan.visible !== false ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                                     title={plan.visible !== false ? "點擊隱藏" : "點擊顯示"}
                                                 >
-                                                    {plan.visible !== false ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                                    {plan.visible !== false ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                                 </button>
                                                 <button onClick={() => removePricingPlan(pIdx)} className="text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4"/></button>
                                             </div>
@@ -821,7 +821,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.faq.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('faq')} className={`p-1.5 rounded-lg transition-colors ${config.faq.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.faq.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.faq.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -861,7 +861,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                 className={`p-1.5 rounded-lg transition-colors ${item.visible !== false ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                                 title={item.visible !== false ? "點擊隱藏" : "點擊顯示"}
                                             >
-                                                {item.visible !== false ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                                {item.visible !== false ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                             </button>
                                             <button onClick={() => removeFaq(idx)} className="text-slate-400 hover:text-red-500 p-1">
                                                 <Trash2 className="w-5 h-5" />
@@ -884,7 +884,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.gallery.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('gallery')} className={`p-1.5 rounded-lg transition-colors ${config.gallery.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.gallery.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.gallery.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -927,7 +927,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                                         className={`p-1.5 rounded-md backdrop-blur-sm shadow-sm transition-colors ${imgVisible ? 'bg-white/80 text-slate-700 hover:bg-white hover:text-blue-600' : 'bg-slate-800/80 text-white'}`}
                                                         title={imgVisible ? "點擊隱藏" : "點擊顯示"}
                                                     >
-                                                        {imgVisible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                                        {imgVisible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                                     </button>
                                                 </div>
                                             </div>
@@ -957,7 +957,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-slate-500">{config.contact.visible ? '已顯示' : '已隱藏'}</span>
                                     <button onClick={() => toggleVisibility('contact')} className={`p-1.5 rounded-lg transition-colors ${config.contact.visible ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                                        {config.contact.visible ? <Eye className="w-4 h-4"/> : <EyeOff className="w-4 h-4"/>}
+                                        {config.contact.visible ? (<Eye className="w-4 h-4"/>) : (<EyeOff className="w-4 h-4"/>)}
                                     </button>
                                 </div>
                             </div>
@@ -981,7 +981,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             onClick={() => updateContactInfo('phone', 'visible', !config.contact.info.phone.visible)}
                                             className={`p-1 rounded transition-colors ${config.contact.info.phone.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                         >
-                                            {config.contact.info.phone.visible ? <Eye className="w-3.5 h-3.5"/> : <EyeOff className="w-3.5 h-3.5"/>}
+                                            {config.contact.info.phone.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
                                     <input type="text" value={config.contact.info.phone.value} onChange={e => updateContactInfo('phone', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.phone.visible && 'bg-slate-100 text-slate-500'}`} />
@@ -993,7 +993,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             onClick={() => updateContactInfo('email', 'visible', !config.contact.info.email.visible)}
                                             className={`p-1 rounded transition-colors ${config.contact.info.email.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                         >
-                                            {config.contact.info.email.visible ? <Eye className="w-3.5 h-3.5"/> : <EyeOff className="w-3.5 h-3.5"/>}
+                                            {config.contact.info.email.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
                                     <input type="text" value={config.contact.info.email.value} onChange={e => updateContactInfo('email', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.email.visible && 'bg-slate-100 text-slate-500'}`} />
@@ -1005,7 +1005,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             onClick={() => updateContactInfo('address', 'visible', !config.contact.info.address.visible)}
                                             className={`p-1 rounded transition-colors ${config.contact.info.address.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                         >
-                                            {config.contact.info.address.visible ? <Eye className="w-3.5 h-3.5"/> : <EyeOff className="w-3.5 h-3.5"/>}
+                                            {config.contact.info.address.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
                                     <input type="text" value={config.contact.info.address.value} onChange={e => updateContactInfo('address', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.address.visible && 'bg-slate-100 text-slate-500'}`} />
@@ -1017,7 +1017,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                             onClick={() => updateContactInfo('openHours', 'visible', !config.contact.info.openHours.visible)}
                                             className={`p-1 rounded transition-colors ${config.contact.info.openHours.visible ? 'text-blue-600 bg-blue-50' : 'text-slate-400 bg-slate-200'}`}
                                         >
-                                            {config.contact.info.openHours.visible ? <Eye className="w-3.5 h-3.5"/> : <EyeOff className="w-3.5 h-3.5"/>}
+                                            {config.contact.info.openHours.visible ? (<Eye className="w-3.5 h-3.5"/>) : (<EyeOff className="w-3.5 h-3.5"/>)}
                                         </button>
                                     </div>
                                     <input type="text" value={config.contact.info.openHours.value} onChange={e => updateContactInfo('openHours', 'value', e.target.value)} className={`w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!config.contact.info.openHours.visible && 'bg-slate-100 text-slate-500'}`} />
