@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && npx esbuild src/worker.ts --bundle --outfile=dist/_worker.js --format=esm --platform=browser --external:cloudflare:*",
-    "deploy": "wrangler pages deploy",
+    "deploy": "npx wrangler pages deploy",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "tailwindcss": "^3.4.0",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",
-    "esbuild": "^0.19.0"
+    "esbuild": "^0.19.0",
+    "wrangler": "^3.0.0"
   }
 }
