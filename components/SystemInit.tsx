@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { AlertTriangle, RefreshCw, Trash2, Database, X, Loader2, Settings, Monitor, Layout, Type, Save, List, Plus, Music, Tag, Edit, Type as TypeIcon, CheckSquare, Square, Calendar as CalendarIcon, Cloud, Wrench } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { AlertTriangle, RefreshCw, Trash2, Database, X, Loader2, Settings, Monitor, Layout, Type, Save, List, Plus, Music, Tag, Edit, Type as TypeIcon, CheckSquare, Square, Calendar as CalendarIcon, Cloud, Wrench, Download, Upload } from 'lucide-react';
 import { AppUser, AppSettings, SystemConfig, ClearDataOptions } from '../types';
 import { db } from '../services/db'; // Import db service directly for patching
 
@@ -26,6 +26,8 @@ export const SystemInit: React.FC<SystemInitProps> = ({
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState<string | null>(null);
     const [patchMessage, setPatchMessage] = useState<string | null>(null);
+    const [backupMessage, setBackupMessage] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Clear Selection State
     const [clearOptions, setClearOptions] = useState<ClearDataOptions>({
@@ -98,6 +100,49 @@ export const SystemInit: React.FC<SystemInitProps> = ({
         } finally {
             setIsProcessing(false);
             setTimeout(() => setPatchMessage(null), 5000);
+        }
+    };
+
+    const handleDownloadBackup = async () => {
+        setIsProcessing(true);
+        setBackupMessage("準備下載中...");
+        try {
+            const blob = await db.exportDatabase();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup-${isTestMode ? 'test' : 'prod'}-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            setBackupMessage("下載完成");
+        } catch (e: any) {
+            setBackupMessage(`備份失敗: ${e.message}`);
+        } finally {
+            setIsProcessing(false);
+            setTimeout(() => setBackupMessage(null), 3000);
+        }
+    };
+
+    const handleImportBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!confirm("確定要匯入此備份檔嗎？\n注意：此操作將會覆蓋目前的資料庫內容！")) {
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
+        setIsProcessing(true);
+        setBackupMessage("還原資料中...");
+        try {
+            await db.importDatabase(file);
+            setBackupMessage("還原成功！系統將重新載入...");
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (e: any) {
+            setBackupMessage(`還原失敗: ${e.message}`);
+            setIsProcessing(false);
         }
     };
 
@@ -543,8 +588,69 @@ export const SystemInit: React.FC<SystemInitProps> = ({
                         <p>
                             <strong>資料庫狀態 (Cloudflare / Local)：</strong> 
                             目前系統運行於 {isTestMode ? '測試環境 (Test Mode)' : '正式環境 (Production)'}。
-                            此應用程式目前使用瀏覽器本地儲存 (Local Storage) 作為資料庫，適合靜態部署 (Cloudflare Pages)。若清除瀏覽器快取，未備份的資料可能會遺失。
+                            備份與還原功能將針對<span className="font-bold underline">目前所在的環境</span>進行操作。
                         </p>
+                    </div>
+
+                    {/* Backup & Restore Section */}
+                    <div className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 shadow-sm border border-slate-200">
+                        <div className="flex items-center mb-6">
+                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4 text-blue-600">
+                                <Database className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-800">資料庫備份與還原</h3>
+                                <p className="text-sm text-slate-500">完整匯出或匯入系統資料 (JSON 格式)。適用於 D1 資料庫遷移。</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="border border-slate-200 rounded-xl p-5 hover:border-blue-300 transition-colors">
+                                <h4 className="font-bold text-slate-700 mb-2 flex items-center">
+                                    <Download className="w-4 h-4 mr-2 text-blue-600" />
+                                    匯出備份 (Export)
+                                </h4>
+                                <p className="text-xs text-slate-500 mb-4">下載目前環境的所有資料表內容為 JSON 檔案。</p>
+                                <button 
+                                    onClick={handleDownloadBackup}
+                                    disabled={isProcessing}
+                                    className="w-full py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium text-sm flex items-center justify-center transition-colors disabled:opacity-50"
+                                >
+                                    {isProcessing && backupMessage?.includes("下載") ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : null}
+                                    下載備份檔
+                                </button>
+                            </div>
+
+                            <div className="border border-slate-200 rounded-xl p-5 hover:border-orange-300 transition-colors">
+                                <h4 className="font-bold text-slate-700 mb-2 flex items-center">
+                                    <Upload className="w-4 h-4 mr-2 text-orange-600" />
+                                    還原備份 (Import)
+                                </h4>
+                                <p className="text-xs text-slate-500 mb-4">上傳 JSON 備份檔以覆蓋目前資料庫。此動作無法復原。</p>
+                                <div className="relative">
+                                    <input 
+                                        type="file" 
+                                        accept=".json"
+                                        ref={fileInputRef}
+                                        onChange={handleImportBackup}
+                                        disabled={isProcessing}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                    />
+                                    <button 
+                                        disabled={isProcessing}
+                                        className="w-full py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium text-sm flex items-center justify-center transition-colors disabled:bg-orange-400"
+                                    >
+                                        {isProcessing && backupMessage?.includes("還原") ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : null}
+                                        選擇檔案並還原
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {backupMessage && (
+                            <div className="mt-4 text-center text-sm font-bold text-slate-600 animate-in fade-in">
+                                {backupMessage}
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -400,6 +400,88 @@ export const db = {
         }
     },
 
+    // --- Backup & Restore ---
+    async exportDatabase() {
+        if (useLocalStorage) {
+            // Local Storage Export Logic
+            const exportData: Record<string, any[]> = {};
+            const collections = Object.keys(JSON_FIELDS);
+            collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries'); 
+            
+            collections.forEach(c => {
+                // Map collection names to standard Table names if possible to keep format consistent with API
+                const map: Record<string, string> = {
+                    students: 'Students', teachers: 'Teachers', lessons: 'Lessons',
+                    expenses: 'Expenses', sales: 'Sales', users: 'Users',
+                    availabilities: 'Availabilities', calendar_notes: 'CalendarNotes',
+                    system_config: 'SystemConfig', inquiries: 'Inquiries'
+                };
+                const key = map[c] || c;
+                exportData[key] = this.lsGet(c);
+            });
+
+            const blob = new Blob([JSON.stringify({ 
+                meta: { version: '1.0', timestamp: new Date().toISOString(), mode: 'local' }, 
+                data: exportData 
+            })], { type: 'application/json' });
+            
+            return blob;
+        } else {
+            // API Export Logic
+            try {
+                const res = await this.apiCall(`/api/backup?mode=${currentMode}`);
+                return await res.blob();
+            } catch (e) {
+                console.error("Export Failed:", e);
+                throw e;
+            }
+        }
+    },
+
+    async importDatabase(file: File) {
+        const text = await file.text();
+        const json = JSON.parse(text);
+
+        if (useLocalStorage) {
+            // Local Storage Import Logic
+            if (!json.data) throw new Error("Invalid backup format");
+            
+            // Clear current data first (Safety)
+            const collections = Object.keys(JSON_FIELDS);
+            collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries'); 
+            collections.forEach(c => localStorage.removeItem(`eduflow_${currentMode}_${c}`));
+
+            // Restore
+            const mapReverse: Record<string, string> = {
+                Students: 'students', Teachers: 'teachers', Lessons: 'lessons',
+                Expenses: 'expenses', Sales: 'sales', Users: 'users',
+                Availabilities: 'availabilities', CalendarNotes: 'calendar_notes',
+                SystemConfig: 'system_config', Inquiries: 'inquiries'
+            };
+
+            for (const [key, rows] of Object.entries(json.data)) {
+                const collectionName = mapReverse[key];
+                if (collectionName && Array.isArray(rows)) {
+                    this.lsSave(collectionName, rows);
+                }
+            }
+            return { success: true };
+        } else {
+            // API Import Logic
+            try {
+                const res = await this.apiCall(`/api/backup?mode=${currentMode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: text
+                });
+                return await res.json();
+            } catch (e) {
+                console.error("Import Failed:", e);
+                throw e;
+            }
+        }
+    },
+
     async clearAllData(options: ClearDataOptions) {
         if (options.students) await this.truncate('students');
         if (options.teachers) { await this.truncate('teachers'); await this.truncate('users'); }

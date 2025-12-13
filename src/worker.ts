@@ -256,7 +256,96 @@ export default {
         }
     }
 
-    // 7. Serve Static Assets (with SPA Fallback)
+    // 7. Backup & Restore Endpoint
+    if (url.pathname === '/api/backup') {
+        const mode = url.searchParams.get('mode') || 'production';
+        const prefix = mode === 'test' ? 'Test_' : '';
+
+        // GET: Export Database
+        if (request.method === 'GET') {
+            try {
+                const backupData: Record<string, any[]> = {};
+                
+                for (const table of TABLES) {
+                    const tableName = `${prefix}${table}`;
+                    // Check if table exists first to avoid error
+                    try {
+                        const { results } = await env.DB.prepare(`SELECT * FROM ${tableName}`).all();
+                        backupData[table] = results;
+                    } catch (e) {
+                        // Table might not exist, export empty array or skip
+                        backupData[table] = [];
+                    }
+                }
+                
+                const meta = {
+                    version: '1.0',
+                    timestamp: new Date().toISOString(),
+                    mode: mode
+                };
+
+                return new Response(JSON.stringify({ meta, data: backupData }), { 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Content-Disposition': `attachment; filename="backup-${mode}-${new Date().toISOString().split('T')[0]}.json"`
+                    } 
+                });
+            } catch (e: any) {
+                return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: {'Content-Type': 'application/json'} });
+            }
+        }
+
+        // POST: Import Database (Restore)
+        if (request.method === 'POST') {
+            try {
+                const body = await request.json() as { meta: any, data: Record<string, any[]> };
+                if (!body.data) {
+                    return new Response('Invalid backup file format', { status: 400 });
+                }
+
+                const statements: D1PreparedStatement[] = [];
+
+                for (const [tableKey, rows] of Object.entries(body.data)) {
+                    // Check if tableKey is a valid table to prevent injection/errors
+                    if (!TABLES.includes(tableKey)) continue;
+
+                    const tableName = `${prefix}${tableKey}`;
+
+                    // 1. Delete existing data for this table
+                    statements.push(env.DB.prepare(`DELETE FROM ${tableName}`));
+
+                    // 2. Insert new data
+                    if (Array.isArray(rows) && rows.length > 0) {
+                        for (const row of rows) {
+                            const keys = Object.keys(row);
+                            const placeholders = keys.map(() => '?').join(',');
+                            const values = Object.values(row);
+                            statements.push(
+                                env.DB.prepare(`INSERT INTO ${tableName} (${keys.join(',')}) VALUES (${placeholders})`).bind(...values)
+                            );
+                        }
+                    }
+                }
+
+                if (statements.length > 0) {
+                    // D1 Batch limit is usually 128 statements depending on plan.
+                    // If rows are huge, we might need to chunk. For now, simple batching.
+                    // To be safe, we execute in smaller chunks.
+                    const CHUNK_SIZE = 50;
+                    for (let i = 0; i < statements.length; i += CHUNK_SIZE) {
+                        const chunk = statements.slice(i, i + CHUNK_SIZE);
+                        await env.DB.batch(chunk);
+                    }
+                }
+
+                return new Response(JSON.stringify({ success: true, message: 'Database restored successfully' }), { headers: {'Content-Type': 'application/json'} });
+            } catch (e: any) {
+                return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: {'Content-Type': 'application/json'} });
+            }
+        }
+    }
+
+    // 8. Serve Static Assets (with SPA Fallback)
     // Try to get the static asset
     let response = await env.ASSETS.fetch(request);
 
