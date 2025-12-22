@@ -64,13 +64,6 @@ const FadeIn: React.FC<FadeInProps> = ({
     );
 };
 
-// LINE Logo Component
-const LineLogo = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path fillRule="evenodd" clipRule="evenodd" d="M12.0002 4C7.50209 4 3.8291 7.228 3.8291 11.237C3.8291 13.627 5.1631 15.753 7.2291 16.993C7.1291 17.362 6.8921 18.232 6.8681 18.334C6.8681 18.334 6.8091 18.496 6.9071 18.577C7.0051 18.658 7.1341 18.638 7.1341 18.638C7.6201 18.567 9.1721 17.625 9.9671 16.942C10.6271 17.067 11.3061 17.136 12.0002 17.136C16.4982 17.136 20.1712 13.908 20.1712 9.90002C20.1712 5.89102 16.4982 4 12.0002 4Z"/>
-    </svg>
-);
-
 interface OfficialWebsiteProps {
     teachers: Teacher[];
     systemConfig: SystemConfig;
@@ -204,7 +197,6 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
     const contactEmail = getContactInfo('email');
     const contactAddress = getContactInfo('address');
     const contactOpenHours = getContactInfo('openHours');
-    const lineUrl = config.contact.info.lineUrl; // Direct string access for LINE URL
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
@@ -288,7 +280,6 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
 
             {/* Hero Section */}
             <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-24 overflow-hidden scroll-mt-20">
-                {/* ... existing hero content ... */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-blue-100/40 rounded-full blur-[100px] animate-pulse duration-[8000ms]"></div>
                     <div className="absolute top-[40%] left-[-20%] w-[600px] h-[600px] bg-purple-100/40 rounded-full blur-[100px] animate-pulse duration-[10000ms]"></div>
@@ -497,7 +488,6 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                 <section id="teachers" className="py-16 lg:py-20 bg-slate-50 scroll-mt-28">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <FadeIn direction="up">
-                            {/* Updated Header Layout: Centered */}
                             <div className="text-center max-w-3xl mx-auto mb-16">
                                 <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">{config.teachers.title}</h2>
                                 <p className="text-slate-600 text-lg">{config.teachers.subtitle}</p>
@@ -507,7 +497,6 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                             {displayedTeachers.length > 0 ? (
                                 displayedTeachers.map((teacher, idx) => {
-                                    // Use config data directly
                                     const teacherConfig = teacher.config;
                                     const bio = teacherConfig?.customBio || "教學經驗豐富，擅長引導學生建立自信。";
                                     const imageUrl = teacherConfig?.imageUrl;
@@ -556,15 +545,13 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <FadeIn direction="up">
                             <div className="text-center mb-16">
-                                <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">{config.gallery.title}</h2>
+                                <h2 className="text-3xl lg:text-4 font-bold text-slate-900 mb-4">{config.gallery.title}</h2>
                                 <p className="text-slate-600 text-lg">{config.gallery.subtitle}</p>
                             </div>
                         </FadeIn>
                         
-                        {/* Changed from columns-1 (Masonry) to Grid for fixed aspect ratio */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {displayedGallery.map((item, idx) => {
-                                // Compatible with both string (legacy) and object
                                 const src = typeof item === 'string' ? item : item.url;
                                 return (
                                     <FadeIn key={idx} direction="up" delay={idx * 100}>
@@ -893,7 +880,7 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
             </footer>
 
             {/* Floating LINE Button - Only Show if lineUrl is configured */}
-            {lineUrl && (
+            {config.contact.info.lineUrl && (
                 <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 group">
                     {/* Speech Bubble */}
                     {showLineBubble && (
@@ -912,17 +899,18 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                         </div>
                     )}
 
-                    {/* Main Button */}
+                    {/* Main Button - Updated to Image Style */}
                     <a
-                        href={lineUrl} 
+                        href={config.contact.info.lineUrl} 
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="bg-[#06C755] hover:bg-[#05b64d] text-white p-1 rounded-full shadow-lg shadow-green-500/30 transition-all duration-300 transform hover:scale-105 flex items-center pr-5 group"
+                        className="transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl hover:shadow-green-500/20 rounded-2xl block overflow-hidden"
                     >
-                        <div className="w-12 h-12 flex items-center justify-center bg-white/20 rounded-full mr-3 backdrop-blur-sm">
-                             <LineLogo />
-                        </div>
-                        <span className="font-bold text-base tracking-wide">加入官方LINE</span>
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" 
+                            alt="LINE" 
+                            className="w-14 h-14 md:w-16 md:h-16 object-contain"
+                        />
                     </a>
                 </div>
             )}
