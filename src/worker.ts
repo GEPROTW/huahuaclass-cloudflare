@@ -347,15 +347,23 @@ export default {
 
     // 8. Serve Static Assets (with SPA Fallback)
     try {
+        const assetFetcher = env.ASSETS || (env as any).assets;
+        
+        if (!assetFetcher) {
+             // If no asset fetcher is available, we can't serve the frontend.
+             // This might happen if the worker is deployed without assets or binding is missing.
+             return new Response("Static assets binding (ASSETS) not found. Please check wrangler.json configuration.", { status: 500 });
+        }
+
         // Try to get the static asset
-        let response = await env.ASSETS.fetch(request);
+        let response = await assetFetcher.fetch(request);
 
         // If not found (404) and it's not a file request (doesn't look like an extension), 
         // allow falling back to index.html for React Router (Single Page App)
         if (response.status === 404 && !url.pathname.includes('.')) {
             const indexUrl = new URL('/index.html', request.url);
             // Create a FRESH request to avoid "Body already used" errors
-            response = await env.ASSETS.fetch(new Request(indexUrl, {
+            response = await assetFetcher.fetch(new Request(indexUrl, {
                 method: request.method,
                 headers: request.headers
             }));
