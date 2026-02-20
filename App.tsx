@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { CalendarView } from './components/CalendarView';
@@ -26,7 +27,8 @@ import { ShieldAlert, Menu, Loader2, Database, Wrench, Activity, Cloud, Monitor 
 import { db } from './services/db';
 
 const App: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
   
   // Sidebar State
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -69,10 +71,6 @@ const App: React.FC = () => {
       const saved = localStorage.getItem('currentUser');
       return saved ? JSON.parse(saved) : null;
   });
-
-  // View State (Website vs Login vs App)
-  // If no user, default to 'website', unless manually switched to 'login'
-  const [viewMode, setViewMode] = useState<'website' | 'login'>('website');
 
   // Impersonation State
   const [originalAdmin, setOriginalAdmin] = useState<AppUser | null>(null);
@@ -199,14 +197,14 @@ const App: React.FC = () => {
       setOriginalAdmin(null); 
       localStorage.setItem('currentUser', JSON.stringify(user));
       if (user.settings) setAppSettings(user.settings);
-      setCurrentTab('dashboard');
+      navigate('/admin/dashboard');
   };
 
   const handleLogout = () => {
       setCurrentUser(null);
       setOriginalAdmin(null);
-      setViewMode('website');
       localStorage.removeItem('currentUser');
+      navigate('/login');
   };
 
   const handleImpersonate = (targetUser: AppUser) => {
@@ -214,7 +212,7 @@ const App: React.FC = () => {
       setOriginalAdmin(currentUser);
       setCurrentUser(targetUser);
       if (targetUser.settings) setAppSettings(targetUser.settings);
-      setCurrentTab('dashboard');
+      navigate('/admin/dashboard');
   };
 
   const handleStopImpersonation = () => {
@@ -222,7 +220,7 @@ const App: React.FC = () => {
           setCurrentUser(originalAdmin);
           setOriginalAdmin(null);
           if (originalAdmin.settings) setAppSettings(originalAdmin.settings);
-          setCurrentTab('dashboard');
+          navigate('/admin/dashboard');
       }
   };
 
@@ -362,8 +360,8 @@ const App: React.FC = () => {
       return { canView: !!perm?.view, canEdit: !!perm?.edit };
   };
 
-  const renderContent = () => {
-    const { canView, canEdit } = checkPermission(currentTab as ModuleId);
+  const renderContent = (tab: string) => {
+    const { canView, canEdit } = checkPermission(tab as ModuleId);
     
     if (!canView) {
         return (
@@ -377,7 +375,7 @@ const App: React.FC = () => {
     
     const readOnly = !canEdit;
 
-    switch (currentTab) {
+    switch (tab) {
         case 'dashboard':
             return <Dashboard lessons={lessons} students={students} teachers={teachers} onUpdateLesson={lessonCRUD.update} currentUser={currentUser} systemConfig={systemConfig} />;
         case 'calendar':
@@ -466,111 +464,130 @@ const App: React.FC = () => {
       }
   };
 
-  if (!currentUser) {
-      if (loading) return (
+  if (loading) {
+      return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 flex-col">
             <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
             <p className="text-slate-500 font-medium">系統載入中...</p>
             <p className="text-slate-400 text-xs mt-2">連線 Cloudflare D1 資料庫</p>
         </div>
       );
-      
-      const usersForLogin = users.length > 0 ? users : [DEFAULT_ADMIN_USER];
-      
-      if (viewMode === 'login') {
-          return (
-            <div className="relative">
-                {loadError && (
-                    <div className="absolute top-4 left-0 right-0 z-50 flex justify-center px-4">
-                        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl shadow-lg flex flex-col items-center max-w-lg">
-                            <div className="flex items-center mb-3">
-                                <Database className="w-5 h-5 mr-3 flex-shrink-0 text-amber-600" />
-                                <span className="text-base font-bold">{loadError}</span>
-                            </div>
-                            <p className="text-sm text-amber-700 mb-4 text-center">
-                                {diagnosisMsg ? diagnosisMsg : "無法讀取資料表。這通常是因為這是第一次部署，資料庫還是空的，或者API尚未啟動。"}
-                            </p>
-                            <div className="flex gap-3">
-                                <button 
-                                    onClick={handleRepairDatabase}
-                                    disabled={isRepairing}
-                                    className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold flex items-center hover:bg-amber-700 transition-colors disabled:opacity-50"
-                                >
-                                    {isRepairing ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : <Wrench className="w-4 h-4 mr-2"/>}
-                                    {isRepairing ? '修復中...' : '一鍵初始化資料庫'}
-                                </button>
-                                <button 
-                                    onClick={handleHealthCheck}
-                                    className="bg-white border border-amber-300 text-amber-700 px-4 py-2 rounded-lg font-bold hover:bg-amber-50 flex items-center transition-colors"
-                                >
-                                    <Activity className="w-4 h-4 mr-2"/>
-                                    診斷連線
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                <LoginView 
-                    users={usersForLogin} 
-                    onLogin={handleLogin} 
-                    onUpdateUser={userCRUD.update} 
-                    systemConfig={systemConfig} 
-                    onBack={() => setViewMode('website')}
-                />
-            </div>
-          );
-      }
-
-      // Default: Public Website with config prop
-      return (
-          <OfficialWebsite 
-            teachers={teachers} 
-            systemConfig={systemConfig} 
-            onGoToLogin={() => setViewMode('login')} 
-            onAddInquiry={inquiryCRUD.add}
-          />
-      );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex font-sans">
-      <Sidebar 
-        currentTab={currentTab} setCurrentTab={setCurrentTab} 
-        isTestMode={isTestMode} onToggleTestMode={handleToggleTestMode}
-        currentUser={currentUser} onLogout={handleLogout}
-        onUpdateUser={userCRUD.update}
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
-        users={users}
-        originalAdmin={originalAdmin}
-        onImpersonate={handleImpersonate}
-        onStopImpersonation={handleStopImpersonation}
-        systemConfig={systemConfig}
-      />
-      
-      <main className={`flex-1 ${getSpacingClass()} overflow-y-auto h-screen transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'ml-0 md:ml-20'}`}>
-        <header className="mb-6 flex items-center justify-between md:hidden">
-            <div className="flex items-center">
-                <button 
-                    onClick={() => setIsSidebarOpen(true)}
-                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 mr-3"
-                >
-                    <Menu className="w-6 h-6" />
-                </button>
-                <h1 className="text-xl font-bold text-gray-800">{systemConfig.appInfo.sidebarTitle}</h1>
-            </div>
-        </header>
+  const usersForLogin = users.length > 0 ? users : [DEFAULT_ADMIN_USER];
 
-        {loading ? (
-             <div className="h-full flex items-center justify-center">
-                 <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-             </div>
-        ) : (
-            renderContent()
-        )}
-      </main>
-    </div>
+  return (
+    <Routes>
+        {/* Public Website */}
+        <Route path="/" element={
+            <OfficialWebsite 
+                teachers={teachers} 
+                systemConfig={systemConfig} 
+                onGoToLogin={() => navigate('/login')} 
+                onAddInquiry={inquiryCRUD.add}
+            />
+        } />
+
+        {/* Login Page */}
+        <Route path="/login" element={
+            !currentUser ? (
+                <div className="relative">
+                    {loadError && (
+                        <div className="absolute top-4 left-0 right-0 z-50 flex justify-center px-4">
+                            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-6 py-4 rounded-2xl shadow-lg flex flex-col items-center max-w-lg">
+                                <div className="flex items-center mb-3">
+                                    <Database className="w-5 h-5 mr-3 flex-shrink-0 text-amber-600" />
+                                    <span className="text-base font-bold">{loadError}</span>
+                                </div>
+                                <p className="text-sm text-amber-700 mb-4 text-center">
+                                    {diagnosisMsg ? diagnosisMsg : "無法讀取資料表。這通常是因為這是第一次部署，資料庫還是空的，或者API尚未啟動。"}
+                                </p>
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={handleRepairDatabase}
+                                        disabled={isRepairing}
+                                        className="bg-amber-600 text-white px-4 py-2 rounded-lg font-bold flex items-center hover:bg-amber-700 transition-colors disabled:opacity-50"
+                                    >
+                                        {isRepairing ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> : <Wrench className="w-4 h-4 mr-2"/>}
+                                        {isRepairing ? '修復中...' : '一鍵初始化資料庫'}
+                                    </button>
+                                    <button 
+                                        onClick={handleHealthCheck}
+                                        className="bg-white border border-amber-300 text-amber-700 px-4 py-2 rounded-lg font-bold hover:bg-amber-50 flex items-center transition-colors"
+                                    >
+                                        <Activity className="w-4 h-4 mr-2"/>
+                                        診斷連線
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <LoginView 
+                        users={usersForLogin} 
+                        onLogin={handleLogin} 
+                        onUpdateUser={userCRUD.update} 
+                        systemConfig={systemConfig} 
+                        onBack={() => navigate('/')}
+                    />
+                </div>
+            ) : (
+                <Navigate to="/admin/dashboard" replace />
+            )
+        } />
+
+        {/* Admin Dashboard Routes */}
+        <Route path="/admin/*" element={
+            currentUser ? (
+                <div className="min-h-screen bg-gray-50 flex font-sans">
+                    <Sidebar 
+                        currentTab={location.pathname.split('/')[2] || 'dashboard'} 
+                        setCurrentTab={(tab) => navigate(`/admin/${tab}`)} 
+                        isTestMode={isTestMode} onToggleTestMode={handleToggleTestMode}
+                        currentUser={currentUser} onLogout={handleLogout}
+                        onUpdateUser={userCRUD.update}
+                        isOpen={isSidebarOpen}
+                        setIsOpen={setIsSidebarOpen}
+                        users={users}
+                        originalAdmin={originalAdmin}
+                        onImpersonate={handleImpersonate}
+                        onStopImpersonation={handleStopImpersonation}
+                        systemConfig={systemConfig}
+                    />
+                    
+                    <main className={`flex-1 ${getSpacingClass()} overflow-y-auto h-screen transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'ml-0 md:ml-20'}`}>
+                        <header className="mb-6 flex items-center justify-between md:hidden">
+                            <div className="flex items-center">
+                                <button 
+                                    onClick={() => setIsSidebarOpen(true)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 mr-3"
+                                >
+                                    <Menu className="w-6 h-6" />
+                                </button>
+                                <h1 className="text-xl font-bold text-gray-800">{systemConfig.appInfo.sidebarTitle}</h1>
+                            </div>
+                        </header>
+
+                        <Routes>
+                            <Route path=":tab" element={<TabContentWrapper renderContent={renderContent} />} />
+                            <Route path="" element={<Navigate to="dashboard" replace />} />
+                        </Routes>
+                    </main>
+                </div>
+            ) : (
+                <Navigate to="/login" replace />
+            )
+        } />
+        
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
+};
+
+// Helper component to extract params and render content
+const TabContentWrapper = ({ renderContent }: { renderContent: (tab: string) => React.ReactNode }) => {
+    const { tab } = useParams();
+    return <>{renderContent(tab || 'dashboard')}</>;
 };
 
 export default App;
