@@ -346,16 +346,25 @@ export default {
     }
 
     // 8. Serve Static Assets (with SPA Fallback)
-    // Try to get the static asset
-    let response = await env.ASSETS.fetch(request);
+    try {
+        // Try to get the static asset
+        let response = await env.ASSETS.fetch(request);
 
-    // If not found (404) and it's not a file request (doesn't look like an extension), 
-    // allow falling back to index.html for React Router (Single Page App)
-    if (response.status === 404 && !url.pathname.includes('.')) {
-        response = await env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
+        // If not found (404) and it's not a file request (doesn't look like an extension), 
+        // allow falling back to index.html for React Router (Single Page App)
+        if (response.status === 404 && !url.pathname.includes('.')) {
+            const indexUrl = new URL('/index.html', request.url);
+            // Create a FRESH request to avoid "Body already used" errors
+            response = await env.ASSETS.fetch(new Request(indexUrl, {
+                method: request.method,
+                headers: request.headers
+            }));
+        }
+
+        return response;
+    } catch (e: any) {
+        return new Response(`Worker Error: ${e.message}\nStack: ${e.stack}`, { status: 500 });
     }
-
-    return response;
   }
 };
 
