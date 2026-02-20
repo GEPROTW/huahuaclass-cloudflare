@@ -347,12 +347,12 @@ export default {
 
     // 8. Serve Static Assets (with SPA Fallback)
     try {
-        const assetFetcher = env.ASSETS || (env as any).assets;
+        const assetFetcher = env.ASSETS || (env as any).assets || (env as any).__STATIC_CONTENT;
         
         if (!assetFetcher) {
-             // If no asset fetcher is available, we can't serve the frontend.
-             // This might happen if the worker is deployed without assets or binding is missing.
-             return new Response("Static assets binding (ASSETS) not found. Please check wrangler.json configuration.", { status: 500 });
+             // Debug: List available bindings
+             const availableBindings = Object.keys(env).join(', ');
+             return new Response(`Static assets binding not found. Available bindings: ${availableBindings}. Please check wrangler.json configuration.`, { status: 500 });
         }
 
         // Try to get the static asset
