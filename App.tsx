@@ -68,9 +68,26 @@ const App: React.FC = () => {
 
   // Auth State
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => {
-      const saved = localStorage.getItem('currentUser');
-      return saved ? JSON.parse(saved) : null;
+      try {
+          const saved = localStorage.getItem('currentUser');
+          return saved ? JSON.parse(saved) : null;
+      } catch (e) {
+          console.error("Failed to parse currentUser from localStorage", e);
+          return null;
+      }
   });
+
+  // Validate User Structure
+  const isUserValid = currentUser && typeof currentUser === 'object' && currentUser.role && currentUser.permissions;
+
+  // Auto-logout if user is invalid but present
+  useEffect(() => {
+      if (currentUser && !isUserValid) {
+          console.warn("Detected invalid user state, logging out.");
+          setCurrentUser(null);
+          localStorage.removeItem('currentUser');
+      }
+  }, [currentUser, isUserValid]);
 
   // Impersonation State
   const [originalAdmin, setOriginalAdmin] = useState<AppUser | null>(null);
@@ -361,6 +378,8 @@ const App: React.FC = () => {
   };
 
   const renderContent = (tab: string) => {
+    if (!currentUser || !isUserValid) return null;
+    
     const { canView, canEdit } = checkPermission(tab as ModuleId);
     
     if (!canView) {
@@ -537,7 +556,7 @@ const App: React.FC = () => {
 
         {/* Admin Dashboard Routes */}
         <Route path="/admin/*" element={
-            currentUser ? (
+            isUserValid ? (
                 <div className="min-h-screen bg-gray-50 flex font-sans">
                     <Sidebar 
                         currentTab={location.pathname.split('/')[2] || 'dashboard'} 
