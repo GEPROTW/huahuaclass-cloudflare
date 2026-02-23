@@ -90,7 +90,7 @@ const generateSeedSQL = (prefix: string) => `
     '["鋼琴 (Piano)","小提琴 (Violin)","聲樂 (Vocal)","吉他 (Guitar)","長笛 (Flute)","爵士鼓 (Drums)"]',
     '["教材採購","硬體設備","房租水電","行銷廣告","人事雜支","其他"]',
     '[{"id":"PRIVATE","name":"個別課"},{"id":"SMALL_GROUP","name":"小組課"},{"id":"LARGE_GROUP","name":"團體班"}]',
-    '{"loginTitle":"Huahua Music Class","loginSubtitle":"智慧派課與薪酬管理系統","sidebarTitle":"Huahua Music","sidebarSubtitle":"智慧派課系統"}',
+    '{"loginTitle":"Smiling Music Class","loginSubtitle":"智慧派課與薪酬管理系統","sidebarTitle":"Smiling Music","sidebarSubtitle":"智慧派課系統"}',
     NULL
   );
 

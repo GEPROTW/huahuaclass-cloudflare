@@ -1,4 +1,4 @@
-# Huahua Music Class (Cloudflare Edition)
+# Smiling Music Class (Cloudflare Edition)
 
 這是一個專為音樂教育機構設計的智慧派課與薪酬管理系統。
 本版本已優化為靜態網站架構，適合部署於 **Cloudflare Pages**。

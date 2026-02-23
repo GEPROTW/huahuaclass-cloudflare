@@ -30,9 +30,9 @@ export const DEFAULT_CLASS_TYPES = [
 ];
 
 export const DEFAULT_APP_INFO = {
-    loginTitle: 'Huahua Music Class',
+    loginTitle: 'Smiling Music Class',
     loginSubtitle: '智慧派課與薪酬管理系統',
-    sidebarTitle: 'Huahua Music',
+    sidebarTitle: 'Smiling Music',
     sidebarSubtitle: '智慧派課系統'
 };
 
@@ -123,7 +123,7 @@ export const DEFAULT_WEBSITE_CONFIG: WebsiteConfig = {
         subtitle: "無論是課程諮詢、參觀預約，都歡迎填寫表單，我們將盡快安排專人與您聯繫。",
         info: {
             phone: { value: "(02) 2345-6789", visible: true },
-            email: { value: "info@huahuamusic.com", visible: true },
+            email: { value: "info@smilingmusic.com", visible: true },
             address: { value: "台北市信義區音樂路 123 號", visible: true },
             openHours: { value: "週一至週日 10:00 - 21:00", visible: true },
             lineUrl: "https://line.me/"
