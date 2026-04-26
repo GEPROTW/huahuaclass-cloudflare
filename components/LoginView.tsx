@@ -181,8 +181,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ users, onLogin, onUpdateUs
                     </button>
                 )}
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-center">
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                        <Music className="w-8 h-8 text-white" />
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm p-1">
+                        {systemConfig.website?.favicon ? (
+                            <img src={systemConfig.website.favicon} alt="Logo" className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                            <Music className="w-8 h-8 text-white" />
+                        )}
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">{systemConfig.appInfo.loginTitle}</h1>
                     <p className="text-blue-100 text-sm">{systemConfig.appInfo.loginSubtitle}</p>

@@ -205,9 +205,13 @@ export const OfficialWebsite: React.FC<OfficialWebsiteProps> = ({ teachers, syst
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
-                                <Music className="w-6 h-6" />
-                            </div>
+                            {config.favicon ? (
+                                <img src={config.favicon} alt="Logo" className="w-10 h-10 object-cover rounded-xl mr-3 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300" />
+                            ) : (
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white mr-3 shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
+                                    <Music className="w-6 h-6" />
+                                </div>
+                            )}
                             <div className="flex flex-col">
                                 <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-700 tracking-tight leading-tight">
                                     {systemConfig.appInfo.sidebarTitle}

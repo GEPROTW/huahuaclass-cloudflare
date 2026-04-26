@@ -149,18 +149,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="p-6 border-b border-slate-800 bg-slate-900 sticky top-0 z-10 min-h-[90px] flex flex-col justify-center">
                     <div className={`flex items-center ${!isOpen && 'md:justify-center'}`}>
                         {isOpen ? (
-                            <div className="overflow-hidden">
-                                <h1 className={`text-2xl font-bold bg-clip-text text-transparent whitespace-nowrap ${isTestMode ? 'bg-gradient-to-r from-amber-400 to-orange-400' : 'bg-gradient-to-r from-blue-400 to-teal-400'}`}>
-                                    {systemConfig.appInfo.sidebarTitle}
-                                </h1>
-                                <p className={`text-sm mt-1 whitespace-nowrap ${isTestMode ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
-                                    {isTestMode ? '⚠️ 測試資料庫' : systemConfig.appInfo.sidebarSubtitle}
-                                </p>
+                            <div className="overflow-hidden flex items-center gap-3">
+                                {systemConfig.website?.favicon && (
+                                    <img src={systemConfig.website.favicon} alt="Logo" className="w-8 h-8 object-cover rounded-lg shrink-0" />
+                                )}
+                                <div>
+                                    <h1 className={`text-2xl font-bold bg-clip-text text-transparent whitespace-nowrap ${isTestMode ? 'bg-gradient-to-r from-amber-400 to-orange-400' : 'bg-gradient-to-r from-blue-400 to-teal-400'}`}>
+                                        {systemConfig.appInfo.sidebarTitle}
+                                    </h1>
+                                    <p className={`text-sm mt-1 whitespace-nowrap ${isTestMode ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
+                                        {isTestMode ? '⚠️ 測試資料庫' : systemConfig.appInfo.sidebarSubtitle}
+                                    </p>
+                                </div>
                             </div>
                         ) : (
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl ${isTestMode ? 'bg-amber-50 text-white' : 'bg-blue-600 text-white'}`}>
+                            systemConfig.website?.favicon ? (
+                                <img src={systemConfig.website.favicon} alt="Logo" className="w-10 h-10 object-cover rounded-lg shrink-0" />
+                            ) : (
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xl shrink-0 ${isTestMode ? 'bg-amber-50 text-amber-600' : 'bg-blue-600 text-white'}`}>
                                 {systemConfig.appInfo.sidebarTitle[0]}
                             </div>
+                            )
                         )}
                     </div>
                     
