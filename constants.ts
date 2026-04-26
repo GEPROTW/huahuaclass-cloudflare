@@ -31,9 +31,9 @@ export const DEFAULT_CLASS_TYPES = [
 
 export const DEFAULT_APP_INFO = {
     loginTitle: 'Smiling Music Class',
-    loginSubtitle: '智慧派課與薪酬管理系統',
+    loginSubtitle: '系統登入',
     sidebarTitle: 'Smiling Music',
-    sidebarSubtitle: '智慧派課系統'
+    sidebarSubtitle: '後台管理'
 };
 
 export const DEFAULT_WEBSITE_CONFIG: WebsiteConfig = {
@@ -441,7 +441,9 @@ export const DEFAULT_ADMIN_USER: AppUser = {
         settings: FULL_ACCESS,
         test_mode: FULL_ACCESS,
         inquiries: FULL_ACCESS,
-        website: FULL_ACCESS // Enable Website CMS for Admin
+        website: FULL_ACCESS,
+        classrooms: FULL_ACCESS,
+        equipment_rentals: FULL_ACCESS
     }
 };
 

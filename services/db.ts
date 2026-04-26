@@ -13,10 +13,10 @@ import {
 } from '../constants';
 
 const JSON_FIELDS: Record<string, string[]> = {
-    lessons: ['studentIds', 'studentNotes'],
+    lessons: ['studentIds', 'studentNotes', 'teachingAidIds'],
     users: ['permissions', 'settings'],
     availabilities: ['timeSlots'],
-    system_config: ['subjects', 'expenseCategories', 'classTypes', 'appInfo', 'website'],
+    system_config: ['subjects', 'expenseCategories', 'classTypes', 'appInfo', 'website', 'classrooms', 'teachingAids'],
     payment_slips: ['items']
 };
 
@@ -342,6 +342,13 @@ export const db = {
 
             // 2. Init Backend if mode is not LS
             if (!useLocalStorage) {
+                // Run schema migration first
+                try {
+                    await this.runMigration();
+                } catch (e) {
+                    console.warn("Migration failed during init:", e);
+                }
+
                 try {
                     const res = await fetch(`/api/init?reset=${forceReset}&mode=${currentMode}`, { method: 'POST' });
                     // Check for SPA Fallback (HTML) here too

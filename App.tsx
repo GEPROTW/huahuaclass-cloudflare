@@ -15,7 +15,9 @@ import { LoginView } from './components/LoginView';
 import { UserManagement } from './components/UserManagement';
 import { OfficialWebsite } from './components/OfficialWebsite';
 import { InquiryView } from './components/InquiryView';
-import { WebsiteSettings } from './components/WebsiteSettings'; // Import New Component
+import { WebsiteSettings } from './components/WebsiteSettings'; 
+import { ClassroomView } from './components/ClassroomView'; 
+import { EquipmentRentalView } from './components/EquipmentRentalView'; // Import New Component
 import { 
     DEFAULT_ADMIN_USER, 
     DEFAULT_SYSTEM_CONFIG 
@@ -52,13 +54,27 @@ const App: React.FC = () => {
 
   // Dynamic Document Title and Favicon based on Route
   useEffect(() => {
+    let title = 'Smiling Music Class | 官方網站';
     if (location.pathname.startsWith('/admin')) {
-        document.title = 'Smiling Music Class | 後台管理';
+        title = 'Smiling Music Class | 後台管理';
     } else if (location.pathname === '/login') {
-        document.title = 'Smiling Music Class | 系統登入';
-    } else {
-        document.title = 'Smiling Music Class | 官方網站';
+        title = 'Smiling Music Class | 系統登入';
     }
+
+    document.title = title;
+
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+        metaDesc.setAttribute('content', title);
+    }
+    
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
+    }
+    ogTitle.setAttribute('content', title);
 
     // Update Favicon
     if (systemConfig.website?.favicon) {
@@ -489,6 +505,26 @@ const App: React.FC = () => {
                 onSaveSettings={handleSaveSettings}
                 systemConfig={systemConfig}
                 onUpdateSystemConfig={handleUpdateSystemConfig}
+                currentUser={currentUser}
+            />;
+        case 'classrooms':
+            return <ClassroomView 
+                lessons={lessons}
+                teachers={teachers}
+                students={students}
+                systemConfig={systemConfig}
+                onUpdateSystemConfig={handleUpdateSystemConfig}
+                readOnly={readOnly}
+                currentUser={currentUser}
+            />;
+        case 'equipment_rentals':
+            return <EquipmentRentalView 
+                lessons={lessons}
+                teachers={teachers}
+                students={students}
+                systemConfig={systemConfig}
+                onUpdateSystemConfig={handleUpdateSystemConfig}
+                readOnly={readOnly}
                 currentUser={currentUser}
             />;
         case 'website': // New Case

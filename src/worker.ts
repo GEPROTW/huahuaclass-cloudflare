@@ -56,7 +56,7 @@ const generateCreateSQL = (prefix: string) => `
   CREATE TABLE IF NOT EXISTS ${prefix}Lessons (
     id TEXT PRIMARY KEY, title TEXT NOT NULL, subject TEXT, teacherId TEXT, studentIds TEXT, 
     date TEXT, startTime TEXT, durationMinutes INTEGER, type TEXT, price INTEGER, cost INTEGER, 
-    isCompleted BOOLEAN, lessonPlan TEXT, studentNotes TEXT
+    isCompleted BOOLEAN, lessonPlan TEXT, studentNotes TEXT, classroomId TEXT, teachingAidIds TEXT
   );
   CREATE TABLE IF NOT EXISTS ${prefix}Expenses (
     id TEXT PRIMARY KEY, date TEXT, title TEXT, category TEXT, amount INTEGER, note TEXT
@@ -75,7 +75,7 @@ const generateCreateSQL = (prefix: string) => `
     id TEXT PRIMARY KEY, date TEXT, content TEXT, userId TEXT
   );
   CREATE TABLE IF NOT EXISTS ${prefix}SystemConfig (
-    id TEXT PRIMARY KEY, subjects TEXT, expenseCategories TEXT, classTypes TEXT, appInfo TEXT, website TEXT
+    id TEXT PRIMARY KEY, subjects TEXT, expenseCategories TEXT, classTypes TEXT, appInfo TEXT, website TEXT, classrooms TEXT, teachingAids TEXT
   );
   CREATE TABLE IF NOT EXISTS ${prefix}Inquiries (
     id TEXT PRIMARY KEY, name TEXT, phone TEXT, subject TEXT, message TEXT, 
@@ -245,16 +245,26 @@ export default {
         const prefix = mode === 'test' ? 'Test_' : '';
         
         try {
-            // Attempt to add 'website' column to SystemConfig if it doesn't exist
-            try {
-                await env.DB.prepare(`ALTER TABLE ${prefix}SystemConfig ADD COLUMN website TEXT`).run();
-            } catch (e: any) {
-                if (!e.message?.includes('duplicate column name')) {
-                    throw e; // Rethrow real errors
+            // Attempt to add new columns, ignoring 'duplicate column name' errors
+            const migrations = [
+                `ALTER TABLE ${prefix}SystemConfig ADD COLUMN website TEXT`,
+                `ALTER TABLE ${prefix}SystemConfig ADD COLUMN classrooms TEXT`,
+                `ALTER TABLE ${prefix}SystemConfig ADD COLUMN teachingAids TEXT`,
+                `ALTER TABLE ${prefix}Lessons ADD COLUMN classroomId TEXT`,
+                `ALTER TABLE ${prefix}Lessons ADD COLUMN teachingAidIds TEXT`
+            ];
+
+            for (const migration of migrations) {
+                try {
+                    await env.DB.prepare(migration).run();
+                } catch (e: any) {
+                    if (!e.message?.includes('duplicate column name') && !e.message?.includes('Duplicate column')) {
+                        console.warn(`Migration skipped or failed: ${migration} - ${e.message}`);
+                    }
                 }
             }
             
-            return new Response(JSON.stringify({ success: true, message: 'Schema patched: website column added' }), { headers: {'Content-Type': 'application/json'} });
+            return new Response(JSON.stringify({ success: true, message: 'Schema patched: new columns added' }), { headers: {'Content-Type': 'application/json'} });
         } catch (e: any) {
             return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: {'Content-Type': 'application/json'} });
         }

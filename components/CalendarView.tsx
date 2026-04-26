@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Lesson, Teacher, Student, ClassType, AppUser, Availability, CalendarNote, getClassTypeName, SystemConfig } from '../types';
-import { ChevronLeft, ChevronRight, Plus, Clock, User, Users, Music, Trash2, CheckCircle, XCircle, Search, X, Calendar as CalendarIcon, ChevronDown, ChevronUp, AlertTriangle, Filter, DollarSign, Lock, CalendarDays, Clock as ClockIcon, Edit2, Check, Repeat, ArrowRight, ArrowDownCircle, BookOpen, CalendarCheck, UserCheck, Info, FileText, Download, GraduationCap, Radio, StickyNote, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Clock, User, Users, Music, Trash2, CheckCircle, XCircle, Search, X, Calendar as CalendarIcon, ChevronDown, ChevronUp, AlertTriangle, Filter, DollarSign, Lock, CalendarDays, Clock as ClockIcon, Edit2, Check, Repeat, ArrowRight, ArrowDownCircle, BookOpen, CalendarCheck, UserCheck, Info, FileText, Download, GraduationCap, Radio, StickyNote, Save, MapPin, Box } from 'lucide-react';
 
 // --- Helper Functions ---
 const formatTimeWithPeriod = (time: string) => {
@@ -884,6 +884,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 id: lessonId,
                 title: formLesson.title!,
                 subject: formLesson.subject || effectiveSubjects[0],
+                classroomId: formLesson.classroomId,
+                teachingAidIds: formLesson.teachingAidIds,
                 teacherId: formLesson.teacherId!,
                 studentIds: formLesson.studentIds || [],
                 date: formLesson.date!,
@@ -1231,7 +1233,21 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                                                         {isMyLesson && !isInProgress && <span className="ml-1 text-[8px] bg-blue-100 text-blue-600 px-1 rounded">您的課程</span>}
                                                     </div>
                                                     <>
-                                                        <div className="text-blue-500 truncate mb-1">{lesson.subject}</div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <div className="text-blue-500 truncate">{lesson.subject}</div>
+                                                            {lesson.classroomId && (
+                                                                <div className="flex items-center text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md truncate max-w-[80px]" title={systemConfig?.classrooms?.find(c => c.id === lesson.classroomId)?.name || '未知教室'}>
+                                                                    <MapPin className="w-3 h-3 mr-0.5 flex-shrink-0" />
+                                                                    <span className="truncate">{systemConfig?.classrooms?.find(c => c.id === lesson.classroomId)?.name || '未知教室'}</span>
+                                                                </div>
+                                                            )}
+                                                            {lesson.teachingAidIds && lesson.teachingAidIds.length > 0 && (
+                                                                <div className="flex items-center text-[10px] text-fuchsia-600 bg-fuchsia-50 px-1.5 py-0.5 rounded-md truncate max-w-[80px]" title={`已預約 ${lesson.teachingAidIds.length} 項教具`}>
+                                                                    <Box className="w-3 h-3 mr-0.5 flex-shrink-0" />
+                                                                    <span className="truncate">{lesson.teachingAidIds.length}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         <div className="flex items-center text-slate-400 pt-1 border-t border-slate-100 border-dashed mt-1"><Clock className="w-3 h-3 mr-1" /> {lesson.durationMinutes}m</div>
                                                     </>
                                                 </div>
@@ -1562,14 +1578,60 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                                         <input type="text" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all disabled:text-slate-500" value={formLesson.title || ''} onChange={e => setFormLesson({...formLesson, title: e.target.value})} placeholder="例如：週三鋼琴進階班" disabled={!canEditLogistics} />
                                     </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-semibold text-slate-700">授課科目</label>
+                                            <div className="relative">
+                                                <Music className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                                <select className="w-full h-11 pl-10 bg-slate-50 border border-slate-200 rounded-xl px-4 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none appearance-none cursor-pointer disabled:text-slate-500" value={formLesson.subject} onChange={e => setFormLesson({...formLesson, subject: e.target.value})} disabled={!canEditLogistics}>
+                                                    {effectiveSubjects.map(s => <option key={s} value={s}>{s}</option>)}
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-900 w-4 h-4 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-semibold text-slate-700">授課教室</label>
+                                            <div className="relative">
+                                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                                <select className="w-full h-11 pl-10 bg-slate-50 border border-slate-200 rounded-xl px-4 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none appearance-none cursor-pointer disabled:text-slate-500" value={formLesson.classroomId || ''} onChange={e => setFormLesson({...formLesson, classroomId: e.target.value})} disabled={!canEditLogistics}>
+                                                    <option value="">未指定教室</option>
+                                                    {systemConfig?.classrooms?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-900 w-4 h-4 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-semibold text-slate-700">授課科目</label>
-                                        <div className="relative">
-                                            <Music className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                                            <select className="w-full h-11 pl-10 bg-slate-50 border border-slate-200 rounded-xl px-4 focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none appearance-none cursor-pointer disabled:text-slate-500" value={formLesson.subject} onChange={e => setFormLesson({...formLesson, subject: e.target.value})} disabled={!canEditLogistics}>
-                                                {effectiveSubjects.map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-900 w-4 h-4 pointer-events-none" />
+                                        <label className="text-sm font-semibold text-slate-700">教具租借</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {systemConfig?.teachingAids && systemConfig.teachingAids.length > 0 ? (
+                                                systemConfig.teachingAids.map(aid => {
+                                                    const isSelected = formLesson.teachingAidIds?.includes(aid.id);
+                                                    return (
+                                                        <button 
+                                                            key={aid.id}
+                                                            type="button" 
+                                                            onClick={() => {
+                                                                if (!canEditLogistics) return;
+                                                                const currentIds = formLesson.teachingAidIds || [];
+                                                                if (isSelected) {
+                                                                    setFormLesson({...formLesson, teachingAidIds: currentIds.filter(id => id !== aid.id)});
+                                                                } else {
+                                                                    setFormLesson({...formLesson, teachingAidIds: [...currentIds, aid.id]});
+                                                                }
+                                                            }}
+                                                            className={`px-3 py-1.5 rounded-full border text-xs font-medium flex items-center transition-colors ${isSelected ? 'bg-fuchsia-50/50 border-fuchsia-200 text-fuchsia-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'} ${!canEditLogistics ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                            disabled={!canEditLogistics}
+                                                        >
+                                                            {isSelected && <Check className="w-3 h-3 mr-1" />}
+                                                            {aid.name}
+                                                        </button>
+                                                    );
+                                                })
+                                            ) : (
+                                                <span className="text-xs text-slate-400 p-2 bg-slate-50 rounded border border-slate-100 w-full text-center">後台尚未設定教具選項</span>
+                                            )}
                                         </div>
                                     </div>
 

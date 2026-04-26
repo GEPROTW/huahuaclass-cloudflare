@@ -34,6 +34,8 @@ export interface Lesson {
     startTime: string; // HH:mm
     durationMinutes: number;
     type: ClassType | string; // Allow dynamic string types
+    classroomId?: string; // New: which classroom is this lesson taking place in
+    teachingAidIds?: string[]; // New: list of teaching aid IDs for rental
     price?: number; // New: Total Tuition Fee (Revenue) - Optional for empty input
     cost?: number; // Specific salary cost for this lesson (Expense) - Optional for empty input
     isCompleted: boolean;
@@ -151,7 +153,9 @@ export type ModuleId =
     | 'settings'  // System Settings
     | 'website'   // Official Website CMS
     | 'test_mode' // Test Mode Toggle
-    | 'inquiries'; // Contact Inquiries
+    | 'inquiries' // Contact Inquiries
+    | 'classrooms'// Classrooms
+    | 'equipment_rentals'; // Equipment Rentals
 
 export interface Permission {
     view: boolean;
@@ -295,6 +299,8 @@ export interface SystemConfig {
     subjects: string[];
     expenseCategories: string[];
     classTypes: { id: string; name: string }[];
+    classrooms?: { id: string; name: string }[];
+    teachingAids?: { id: string; name: string }[];
     appInfo: {
         loginTitle: string;
         loginSubtitle: string;
@@ -329,7 +335,9 @@ export const MODULE_NAMES: Record<ModuleId, string> = {
     settings: '系統設定',
     website: '官網設定',
     test_mode: '測試環境切換',
-    inquiries: '預約諮詢'
+    inquiries: '預約諮詢',
+    classrooms: '教室紀錄',
+    equipment_rentals: '教具租借'
 };
 
 export interface ClearDataOptions {

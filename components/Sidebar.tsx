@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, Users, Calculator, GraduationCap, LayoutDashboard, BarChart2, Receipt, ShoppingBag, ToggleLeft, ToggleRight, LogOut, Shield, Key, X, ChevronLeft, ChevronRight, Repeat, Menu as MenuIcon, Settings, MessageSquare, Clock, Globe } from 'lucide-react';
+import { Calendar, Users, Calculator, GraduationCap, LayoutDashboard, BarChart2, Receipt, ShoppingBag, ToggleLeft, ToggleRight, LogOut, Shield, Key, X, ChevronLeft, ChevronRight, Repeat, Menu as MenuIcon, Settings, MessageSquare, Clock, Globe, MapPin, Box } from 'lucide-react';
 import { AppUser, ModuleId, SystemConfig } from '../types';
 
 interface SidebarProps {
@@ -78,6 +78,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: 'sales', label: '銷售紀錄', icon: ShoppingBag },
         { id: 'expenses', label: '成本統計', icon: Receipt },
         { id: 'payroll', label: '薪酬結算', icon: Calculator },
+        { id: 'classrooms', label: '教室紀錄', icon: MapPin },
+        { id: 'equipment_rentals', label: '教具租借', icon: Box },
         { id: 'reports', label: '詳細報表', icon: BarChart2 },
         { id: 'users', label: '權限管理', icon: Shield },
         { id: 'website', label: '官網設定', icon: Globe }, 
