@@ -325,6 +325,15 @@ export const db = {
 
     async initializeData(forceReset = false) {
         try {
+            // Run schema migration first before probing config, so existing instances get patched
+            if (!useLocalStorage) {
+                try {
+                    await this.runMigration();
+                } catch (e) {
+                    console.warn("Migration failed during init:", e);
+                }
+            }
+
             // 1. Probe Config. This will trigger apiCall and auto-detect mode.
             const config = await this.getSystemConfig();
             
@@ -342,13 +351,6 @@ export const db = {
 
             // 2. Init Backend if mode is not LS
             if (!useLocalStorage) {
-                // Run schema migration first
-                try {
-                    await this.runMigration();
-                } catch (e) {
-                    console.warn("Migration failed during init:", e);
-                }
-
                 try {
                     const res = await fetch(`/api/init?reset=${forceReset}&mode=${currentMode}`, { method: 'POST' });
                     // Check for SPA Fallback (HTML) here too

@@ -135,6 +135,8 @@ export const DEFAULT_SYSTEM_CONFIG: SystemConfig = {
     subjects: DEFAULT_MUSIC_SUBJECTS,
     expenseCategories: DEFAULT_EXPENSE_CATEGORIES,
     classTypes: DEFAULT_CLASS_TYPES,
+    classrooms: [],
+    teachingAids: [],
     appInfo: DEFAULT_APP_INFO,
     website: DEFAULT_WEBSITE_CONFIG
 };
