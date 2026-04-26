@@ -222,6 +222,7 @@ export interface WebsiteContactInfo {
 }
 
 export interface WebsiteConfig {
+    favicon?: string; // New: Website Favicon URL
     hero: WebsiteHero;
     features: {
         visible: boolean;

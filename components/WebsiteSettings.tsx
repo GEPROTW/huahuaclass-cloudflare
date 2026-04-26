@@ -108,10 +108,10 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
         setConfig(prev => ({ ...prev, hero: { ...prev.hero, [field]: value } }));
     };
 
-    const updateSection = (section: keyof WebsiteConfig, field: string, value: any) => {
+    const updateSection = (section: Exclude<keyof WebsiteConfig, 'favicon'>, field: string, value: any) => {
         setConfig(prev => ({
             ...prev,
-            [section]: { ...prev[section], [field]: value }
+            [section]: { ...(prev[section] as any), [field]: value }
         }));
     };
 
@@ -288,7 +288,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
         setConfig(prev => ({ ...prev, gallery: { ...prev.gallery, images: newImages } }));
     };
 
-    const toggleVisibility = (section: keyof WebsiteConfig) => {
+    const toggleVisibility = (section: Exclude<keyof WebsiteConfig, 'favicon'>) => {
         // @ts-ignore - Dynamic key access
         const current = config[section].visible;
         updateSection(section, 'visible', !current);
@@ -395,9 +395,29 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                     
                     {/* ... [HERO, FEATURES, COURSES SECTIONS - UNCHANGED] ... */}
                     {activeTab === 'hero' && (
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">主視覺設定 (Hero Section)</h3>
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div className="space-y-8">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">全站網頁設定 (Global Settings)</h3>
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                    <div>
+                                        <ImageUploader 
+                                            label="網頁圖標 (Favicon - 建議正方形 PNG 或 ICO)"
+                                            value={config.favicon || ''}
+                                            onChange={(url) => setConfig(prev => ({ ...prev, favicon: url }))}
+                                            onDelete={async (url) => {
+                                                await db.deleteImage(url);
+                                                setConfig(prev => ({ ...prev, favicon: undefined }));
+                                            }}
+                                            className="w-32 h-32"
+                                            placeholderLabel="上傳圖標"
+                                        />
+                                        <p className="text-xs text-slate-500 mt-2">此圖標會顯示在您的瀏覽器分頁標籤上。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">主視覺設定 (Hero Section)</h3>
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-1">標題前綴</label>
                                     <input type="text" value={config.hero.titlePrefix} onChange={e => updateHero('titlePrefix', e.target.value)} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -454,6 +474,7 @@ export const WebsiteSettings: React.FC<WebsiteSettingsProps> = ({ systemConfig, 
                                         </div>
                                     ))}
                                 </div>
+                            </div>
                             </div>
                         </div>
                     )}

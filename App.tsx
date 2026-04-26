@@ -30,17 +30,6 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Dynamic Document Title based on Route
-  useEffect(() => {
-    if (location.pathname.startsWith('/admin')) {
-        document.title = 'Smiling Music Class | 後台管理';
-    } else if (location.pathname === '/login') {
-        document.title = 'Smiling Music Class | 系統登入';
-    } else {
-        document.title = 'Smiling Music Class | 官方網站';
-    }
-  }, [location.pathname]);
-  
   // Sidebar State
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('isSidebarOpen');
@@ -60,6 +49,28 @@ const App: React.FC = () => {
 
   // Global System Configuration
   const [systemConfig, setSystemConfig] = useState<SystemConfig>(DEFAULT_SYSTEM_CONFIG);
+
+  // Dynamic Document Title and Favicon based on Route
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+        document.title = 'Smiling Music Class | 後台管理';
+    } else if (location.pathname === '/login') {
+        document.title = 'Smiling Music Class | 系統登入';
+    } else {
+        document.title = 'Smiling Music Class | 官方網站';
+    }
+
+    // Update Favicon
+    if (systemConfig.website?.favicon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = systemConfig.website.favicon;
+    }
+  }, [location.pathname, systemConfig.website?.favicon]);
 
   // Apply Font Size Effect
   useEffect(() => {
