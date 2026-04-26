@@ -873,7 +873,7 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white p-8 sm:p-12 min-h-[1000px] print:min-h-0 print:p-0 relative font-sans text-gray-900 border border-gray-200 shadow-sm print:border-none">
+                            <div className="bg-white p-8 sm:p-12 w-full max-w-[210mm] mx-auto min-h-[297mm] print:min-h-0 print:p-0 relative font-sans text-gray-900 border border-gray-200 shadow-sm print:border-none flex flex-col pt-16 print:pt-0">
                                 {/* Print Actions */}
                                 <div className="absolute top-4 right-4 flex space-x-2 print:hidden z-10">
                                     <button 
@@ -891,13 +891,14 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                 </div>
 
                                 {/* Main Slip */}
-                                <div className="mb-12 print:mt-12">
-                                    <div className="text-center mb-8">
+                                <div className="flex-1 print:mt-12 flex flex-col pt-8 print:pt-4">
+                                    <div className="flex-1">
+                                    <div className="text-center mb-6">
                                         <h1 className="text-3xl font-bold mb-2 tracking-widest">{systemConfig?.appInfo.sidebarTitle || 'Smiling Music'}</h1>
                                         <h2 className="text-xl font-medium text-gray-600 tracking-widest">課 程 繳 費 單</h2>
                                     </div>
 
-                                    <div className="flex justify-between items-end mb-6 border-b-2 border-gray-800 pb-2">
+                                    <div className="flex justify-between items-end mb-4 border-b-2 border-gray-800 pb-2">
                                         <div className="space-y-1">
                                             <div className="flex items-center text-lg"><span className="w-24 text-gray-600">學生姓名：</span> <strong>{students.find(s => s.id === editingPaymentSlip.studentId)?.name}</strong></div>
                                             <div className="flex items-center text-lg"><span className="w-24 text-gray-600">開立日期：</span> <span>{editingPaymentSlip.date}</span></div>
@@ -907,33 +908,33 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                         </div>
                                     </div>
 
-                                    <table className="w-full mb-8">
+                                    <table className="w-full mb-6">
                                         <thead className="border-b-2 border-gray-800 bg-gray-50">
                                             <tr>
-                                                <th className="py-3 px-4 text-left font-bold text-gray-700 w-16">項次</th>
-                                                <th className="py-3 px-4 text-left font-bold text-gray-700">品項名稱</th>
-                                                <th className="py-3 px-4 text-right font-bold text-gray-700 w-48">金額 (NT$)</th>
+                                                <th className="py-2 px-4 text-left font-bold text-gray-700 w-16">項次</th>
+                                                <th className="py-2 px-4 text-left font-bold text-gray-700">品項名稱</th>
+                                                <th className="py-2 px-4 text-right font-bold text-gray-700 w-48">金額 (NT$)</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {editingPaymentSlip.items.map((item, index) => (
                                                 <tr key={item.id}>
-                                                    <td className="py-4 px-4 text-gray-600">{index + 1}</td>
-                                                    <td className="py-4 px-4 font-medium">{item.name}</td>
-                                                    <td className="py-4 px-4 text-right font-mono">{item.amount.toLocaleString()}</td>
+                                                    <td className="py-3 px-4 text-gray-600">{index + 1}</td>
+                                                    <td className="py-3 px-4 font-medium">{item.name}</td>
+                                                    <td className="py-3 px-4 text-right font-mono">{item.amount.toLocaleString()}</td>
                                                 </tr>
                                             ))}
                                             {/* Empty rows filler if needed for visual height */}
                                             {Array.from({ length: Math.max(0, 5 - editingPaymentSlip.items.length) }).map((_, i) => (
                                                 <tr key={`empty-${i}`}>
-                                                    <td className="py-4 px-4">&nbsp;</td><td className="py-4 px-4"></td><td className="py-4 px-4"></td>
+                                                    <td className="py-3 px-4">&nbsp;</td><td className="py-4 px-4"></td><td className="py-4 px-4"></td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                         <tfoot className="border-t-2 border-gray-800">
                                             <tr>
-                                                <th colSpan={2} className="py-4 px-4 text-right font-bold text-xl text-gray-800 tracking-widest">總計金額</th>
-                                                <th className="py-4 px-4 text-right font-bold text-2xl font-mono text-gray-900">NT$ {editingPaymentSlip.totalAmount.toLocaleString()}</th>
+                                                <th colSpan={2} className="py-3 px-4 text-right font-bold text-xl text-gray-800 tracking-widest">總計金額</th>
+                                                <th className="py-3 px-4 text-right font-bold text-2xl font-mono text-gray-900">NT$ {editingPaymentSlip.totalAmount.toLocaleString()}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -944,10 +945,11 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                         如有任何問題，請與櫃檯或授課老師聯繫。<br/>
                                         {systemConfig?.website?.contact?.info?.phone?.value ? `聯絡電話：${systemConfig.website.contact.info.phone.value}` : ''}
                                     </div>
+                                    </div>
                                 </div>
 
                                 {/* Scissor Line */}
-                                <div className="relative py-8 my-8 print:my-16 flex items-center px-4 overflow-hidden">
+                                <div className="relative py-4 my-4 print:my-8 flex items-center px-4 overflow-hidden shrink-0">
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div className="w-full border-t-2 border-dashed border-gray-400"></div>
                                     </div>
@@ -957,20 +959,20 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                 </div>
 
                                 {/* Receipt Part */}
-                                <div>
-                                    <div className="text-center mb-6">
+                                <div className="shrink-0 pb-8 print:pb-0">
+                                    <div className="text-center mb-4">
                                         <h2 className="text-xl font-bold text-gray-800 tracking-widest">收 據 (聯)</h2>
                                     </div>
                                     
-                                    <div className="flex justify-between items-start mb-6">
+                                    <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <div className="flex items-center text-lg mb-2"><span className="w-24 text-gray-600">流水編號：</span> <strong className="font-mono text-base">{editingPaymentSlip.serialNumber}</strong></div>
-                                            <div className="flex items-center text-lg mb-2"><span className="w-24 text-gray-600">學生姓名：</span> <strong>{students.find(s => s.id === editingPaymentSlip.studentId)?.name}</strong></div>
+                                            <div className="flex items-center text-lg mb-1"><span className="w-24 text-gray-600">流水編號：</span> <strong className="font-mono text-base">{editingPaymentSlip.serialNumber}</strong></div>
+                                            <div className="flex items-center text-lg mb-1"><span className="w-24 text-gray-600">學生姓名：</span> <strong>{students.find(s => s.id === editingPaymentSlip.studentId)?.name}</strong></div>
                                             <div className="flex items-center text-lg"><span className="w-24 text-gray-600">總計金額：</span> <strong className="text-xl">NT$ {editingPaymentSlip.totalAmount.toLocaleString()}</strong></div>
                                         </div>
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 gap-8 mt-12 bg-amber-50/50 p-6 rounded-xl border border-amber-100">
+                                    <div className="grid grid-cols-2 gap-8 mt-6 bg-amber-50/50 p-6 rounded-xl border border-amber-100 mb-8 print:mb-0">
                                         <div>
                                             <div className="text-gray-500 mb-2 font-medium">繳費時間 (請親自填寫)：</div>
                                             <div className="border-b border-gray-400 h-8 w-64 mt-4"></div>
