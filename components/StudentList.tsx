@@ -168,7 +168,7 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
 
     return (
         <div className="space-y-6 relative">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${printPreviewMode ? 'print:hidden' : ''}`}>
                 <h2 className="text-2xl font-bold text-gray-800">學生管理</h2>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="relative flex-1 sm:flex-none">
@@ -194,7 +194,7 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
             </div>
 
             {/* Updated Table Container */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+            <div className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto ${printPreviewMode ? 'print:hidden' : ''}`}>
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -746,8 +746,8 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
 
             {/* Payment Slip Modal */}
             {isPaymentModalOpen && editingPaymentSlip && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-2 sm:p-4 print:p-0 print:bg-white overflow-y-auto">
-                    <div className={`bg-white shadow-2xl relative w-full ${printPreviewMode ? 'max-w-[800px] my-auto print:shadow-none' : 'max-w-2xl rounded-2xl animate-in zoom-in-95'}`}>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-2 sm:p-4 print:block print:static print:p-0 print:bg-white overflow-y-auto custom-scrollbar print:overflow-visible print:h-auto">
+                    <div className={`bg-white shadow-2xl relative w-full ${printPreviewMode ? 'max-w-[800px] my-auto print:shadow-none print:m-0 print:max-w-full' : 'max-w-2xl rounded-2xl animate-in zoom-in-95'}`}>
                         {!printPreviewMode ? (
                             <div className="flex flex-col max-h-[85vh]">
                                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">

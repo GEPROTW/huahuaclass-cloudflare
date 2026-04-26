@@ -123,12 +123,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Mobile Overlay */}
             {isOpen && (
                 <div 
-                    className="md:hidden fixed inset-0 bg-black/50 z-20 backdrop-blur-sm"
+                    className="md:hidden fixed inset-0 bg-black/50 z-20 backdrop-blur-sm print:hidden"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
-            <div className={`flex flex-col text-white h-[100dvh] fixed left-0 top-0 overflow-visible z-30 shadow-xl transition-all duration-300 md:translate-x-0 ${isTestMode ? 'bg-slate-900 border-r-4 border-amber-500' : 'bg-slate-900'} ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'}`}>
+            <div className={`flex flex-col text-white h-[100dvh] fixed left-0 top-0 overflow-visible z-30 shadow-xl transition-all duration-300 md:translate-x-0 print:hidden ${isTestMode ? 'bg-slate-900 border-r-4 border-amber-500' : 'bg-slate-900'} ${isOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'}`}>
                 {/* Toggle Button - Visible on Desktop only (Mobile uses header burger) */}
                 <button 
                     onClick={() => setIsOpen(!isOpen)}

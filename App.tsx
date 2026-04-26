@@ -600,8 +600,8 @@ const App: React.FC = () => {
                         systemConfig={systemConfig}
                     />
                     
-                    <main className={`flex-1 ${getSpacingClass()} overflow-y-auto h-screen transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'ml-0 md:ml-20'}`}>
-                        <header className="mb-6 flex items-center justify-between md:hidden">
+                    <main className={`flex-1 ${getSpacingClass()} overflow-y-auto h-screen print:h-auto print:overflow-visible transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : 'ml-0 md:ml-20'} print:m-0`}>
+                        <header className="mb-6 flex items-center justify-between md:hidden print:hidden">
                             <div className="flex items-center">
                                 <button 
                                     onClick={() => setIsSidebarOpen(true)}
