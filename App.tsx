@@ -20,7 +20,7 @@ import {
     DEFAULT_ADMIN_USER, 
     DEFAULT_SYSTEM_CONFIG 
 } from './constants';
-import { Lesson, Student, Teacher, Expense, Sale, AppUser, ModuleId, MODULE_NAMES, Permission, Availability, AppSettings, SystemConfig, CalendarNote, ClearDataOptions, Inquiry } from './types';
+import { Lesson, Student, Teacher, Expense, Sale, AppUser, ModuleId, MODULE_NAMES, Permission, Availability, AppSettings, SystemConfig, CalendarNote, ClearDataOptions, Inquiry, PaymentSlip } from './types';
 import { ShieldAlert, Menu, Loader2, Database, Wrench, Activity, Cloud, Monitor } from 'lucide-react';
 
 // Local DB Service (Simulating Cloudflare D1)
@@ -135,6 +135,7 @@ const App: React.FC = () => {
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [calendarNotes, setCalendarNotes] = useState<CalendarNote[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [paymentSlips, setPaymentSlips] = useState<PaymentSlip[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -159,7 +160,7 @@ const App: React.FC = () => {
               timeoutPromise
           ]);
           
-          const [s, t, l, e, sa, u, av, cn, inq, config] = await Promise.all([
+          const [s, t, l, e, sa, u, av, cn, inq, config, ps] = await Promise.all([
               db.getCollection('students'),
               db.getCollection('teachers'),
               db.getCollection('lessons'),
@@ -169,7 +170,8 @@ const App: React.FC = () => {
               db.getCollection('availabilities'),
               db.getCollection('calendar_notes'),
               db.getCollection('inquiries'),
-              db.getSystemConfig()
+              db.getSystemConfig(),
+              db.getCollection('payment_slips')
           ]);
 
           setStudents(s);
@@ -181,6 +183,7 @@ const App: React.FC = () => {
           setAvailabilities(av);
           setCalendarNotes(cn);
           setInquiries(inq);
+          setPaymentSlips(ps);
           if (config) {
              setSystemConfig(config); 
           } else {
@@ -301,6 +304,7 @@ const App: React.FC = () => {
   const availabilityCRUD = createCRUDHandlers<Availability>('availabilities', setAvailabilities);
   const calendarNoteCRUD = createCRUDHandlers<CalendarNote>('calendar_notes', setCalendarNotes);
   const inquiryCRUD = createCRUDHandlers<Inquiry>('inquiries', setInquiries);
+  const paymentSlipCRUD = createCRUDHandlers<PaymentSlip>('payment_slips', setPaymentSlips);
 
   const handleSaveSettings = async () => {
       if (currentUser) {
@@ -439,8 +443,9 @@ const App: React.FC = () => {
             />;
         case 'students':
             return <StudentList 
-                students={students} lessons={lessons} teachers={teachers}
+                students={students} lessons={lessons} teachers={teachers} paymentSlips={paymentSlips}
                 onUpdateStudent={studentCRUD.update} onAddStudent={studentCRUD.add} onDeleteStudent={studentCRUD.delete}
+                onUpdatePaymentSlip={paymentSlipCRUD.update} onAddPaymentSlip={paymentSlipCRUD.add} onDeletePaymentSlip={paymentSlipCRUD.delete}
                 readOnly={readOnly}
                 currentUser={currentUser}
                 systemConfig={systemConfig}

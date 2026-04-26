@@ -1,17 +1,22 @@
 
 
-import React, { useState, useMemo } from 'react';
-import { Student, Lesson, Teacher, AppUser, SystemConfig } from '../types';
-import { Search, Phone, Calendar, Edit2, X, User, GraduationCap, StickyNote, ArrowUpDown, ArrowUp, ArrowDown, Plus, Trash2, AlertTriangle, BookOpen, Clock, CalendarDays, ChevronDown, ChevronUp, UserCheck } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { Student, Lesson, Teacher, AppUser, SystemConfig, PaymentSlip, PaymentItem } from '../types';
+import { Search, Phone, Calendar, Edit2, X, User, GraduationCap, StickyNote, ArrowUpDown, ArrowUp, ArrowDown, Plus, Trash2, AlertTriangle, BookOpen, Clock, CalendarDays, ChevronDown, ChevronUp, UserCheck, Receipt, DollarSign, Upload, Printer } from 'lucide-react';
 import { CalendarView } from './CalendarView';
+import { db } from '../services/db';
 
 interface StudentListProps {
     students: Student[];
     lessons: Lesson[];
     teachers: Teacher[];
+    paymentSlips: PaymentSlip[];
     onUpdateStudent: (student: Student) => void;
     onAddStudent: (student: Student) => void;
     onDeleteStudent: (id: string) => void;
+    onUpdatePaymentSlip: (slip: PaymentSlip) => void;
+    onAddPaymentSlip: (slip: PaymentSlip) => void;
+    onDeletePaymentSlip: (id: string) => void;
     readOnly?: boolean;
     currentUser?: AppUser | null;
     subjects?: string[]; // New Prop
@@ -21,7 +26,7 @@ interface StudentListProps {
 type SortKey = keyof Student;
 type SortDirection = 'asc' | 'desc';
 
-export const StudentList: React.FC<StudentListProps> = ({ students, lessons, teachers, onUpdateStudent, onAddStudent, onDeleteStudent, readOnly = false, currentUser, subjects = [], systemConfig }) => {
+export const StudentList: React.FC<StudentListProps> = ({ students, lessons, teachers, paymentSlips, onUpdateStudent, onAddStudent, onDeleteStudent, onUpdatePaymentSlip, onAddPaymentSlip, onDeletePaymentSlip, readOnly = false, currentUser, subjects = [], systemConfig }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [isAddMode, setIsAddMode] = useState(false);
@@ -30,7 +35,18 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
     const [formError, setFormError] = useState('');
     
     // Expandable Row State
-    const [expandedRow, setExpandedRow] = useState<{ studentId: string, type: 'progress' | 'calendar' } | null>(null);
+    const [expandedRow, setExpandedRow] = useState<{ studentId: string, type: 'progress' | 'calendar' | 'payment' } | null>(null);
+    
+    // Payment Slip State
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [editingPaymentSlip, setEditingPaymentSlip] = useState<PaymentSlip | null>(null);
+    const [paymentSlipStudentId, setPaymentSlipStudentId] = useState<string>('');
+    const [printPreviewMode, setPrintPreviewMode] = useState(false);
+
+    // Receipt Upload State
+    const [uploadingReceiptId, setUploadingReceiptId] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     // History Search State
     const [historySearchTerm, setHistorySearchTerm] = useState('');
     
@@ -92,7 +108,7 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
             : <ArrowDown className="w-3 h-3 ml-1 text-blue-500" />;
     };
 
-    const toggleExpand = (studentId: string, type: 'progress' | 'calendar') => {
+    const toggleExpand = (studentId: string, type: 'progress' | 'calendar' | 'payment') => {
         if (expandedRow && expandedRow.studentId === studentId && expandedRow.type === type) {
             setExpandedRow(null); // Collapse if clicking same
         } else {
@@ -200,6 +216,9 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                              <th className="hidden sm:table-cell px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 課程行事曆
                             </th>
+                            <th className="hidden sm:table-cell px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                課程繳費單
+                            </th>
                             <th className="px-4 py-3 md:px-6 md:py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">操作</th>
                         </tr>
                     </thead>
@@ -250,6 +269,19 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                             {expandedRow?.studentId === student.id && expandedRow.type === 'calendar' ? '收起' : '行事曆'}
                                         </button>
                                     </td>
+                                    <td className="hidden sm:table-cell px-4 py-3 md:px-6 md:py-4">
+                                        <button 
+                                            onClick={() => toggleExpand(student.id, 'payment')}
+                                            className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center border whitespace-nowrap ${
+                                                expandedRow?.studentId === student.id && expandedRow.type === 'payment'
+                                                ? 'bg-amber-100 text-amber-800 border-amber-200' 
+                                                : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50'
+                                            }`}
+                                        >
+                                            <DollarSign className="w-3.5 h-3.5 mr-1" />
+                                            {expandedRow?.studentId === student.id && expandedRow.type === 'payment' ? '收起' : '繳費'}
+                                        </button>
+                                    </td>
 
                                     <td className="px-4 py-3 md:px-6 md:py-4 text-right">
                                         <div className="flex items-center justify-end space-x-1 md:space-x-2">
@@ -266,6 +298,12 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                                     className={`p-1.5 rounded border ${expandedRow?.studentId === student.id && expandedRow.type === 'calendar' ? 'bg-emerald-100 border-emerald-200 text-emerald-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
                                                 >
                                                     <CalendarDays className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => toggleExpand(student.id, 'payment')}
+                                                    className={`p-1.5 rounded border ${expandedRow?.studentId === student.id && expandedRow.type === 'payment' ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                                                >
+                                                    <DollarSign className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
 
@@ -412,6 +450,103 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                                             />
                                                         </div>
                                                      </div>
+                                                )}
+
+                                                {expandedRow.type === 'payment' && (
+                                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-[500px] flex flex-col">
+                                                        <div className="px-4 py-3 bg-amber-50 border-b border-amber-100 flex justify-between items-center">
+                                                            <h4 className="text-sm font-bold text-amber-800 flex items-center">
+                                                                <DollarSign className="w-4 h-4 mr-2" />
+                                                                {student.name} 的繳費紀錄
+                                                            </h4>
+                                                            <button 
+                                                                onClick={() => {
+                                                                    const date = new Date();
+                                                                    const dateStr = date.toISOString().split('T')[0];
+                                                                    const pad = (n: number) => n.toString().padStart(3, '0');
+                                                                    const todayCount = paymentSlips.filter(s => s.date === dateStr).length + 1;
+                                                                    const serial = `PS-${dateStr.replace(/-/g, '')}-${pad(todayCount)}`;
+                                                                    
+                                                                    setEditingPaymentSlip({
+                                                                        id: '',
+                                                                        serialNumber: serial,
+                                                                        studentId: student.id,
+                                                                        date: dateStr,
+                                                                        items: [{ id: `i-${Date.now()}`, name: '課程費用', amount: 0 }],
+                                                                        totalAmount: 0,
+                                                                        status: 'pending'
+                                                                    });
+                                                                    setPaymentSlipStudentId(student.id);
+                                                                    setPrintPreviewMode(false);
+                                                                    setIsPaymentModalOpen(true);
+                                                                }}
+                                                                className="px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 transition-colors shadow-sm"
+                                                            >
+                                                                建立繳費單
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+                                                            {paymentSlips.filter(s => s.studentId === student.id).length > 0 ? (
+                                                                <div className="space-y-3">
+                                                                    {paymentSlips.filter(s => s.studentId === student.id).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(slip => (
+                                                                        <div key={slip.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow gap-4">
+                                                                            <div className="flex-1">
+                                                                                <div className="flex items-center gap-2 mb-1">
+                                                                                    <span className="font-bold text-gray-800 text-sm whitespace-nowrap">{slip.serialNumber}</span>
+                                                                                    <span className={`px-2 py-0.5 rounded text-[10px] whitespace-nowrap font-medium ${slip.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                                        {slip.status === 'paid' ? '已繳費' : '未繳費'}
+                                                                                    </span>
+                                                                                </div>
+                                                                                <div className="text-xs text-gray-500 mb-2">建立日期: {slip.date}</div>
+                                                                                <div className="font-medium text-amber-600 text-sm">
+                                                                                    總計: NT$ {slip.totalAmount?.toLocaleString() || 0}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setEditingPaymentSlip(slip);
+                                                                                        setPaymentSlipStudentId(student.id);
+                                                                                        setPrintPreviewMode(true);
+                                                                                        setIsPaymentModalOpen(true);
+                                                                                    }}
+                                                                                    className="px-3 py-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg text-xs font-medium transition-colors"
+                                                                                >
+                                                                                    總覽/列印
+                                                                                </button>
+                                                                                {slip.status === 'pending' && (
+                                                                                    <button 
+                                                                                        onClick={() => {
+                                                                                            setUploadingReceiptId(slip.id);
+                                                                                            fileInputRef.current?.click();
+                                                                                        }}
+                                                                                        className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-xs font-medium hover:bg-green-600 transition-colors shadow-sm"
+                                                                                    >
+                                                                                        標記已繳費 (上傳收據)
+                                                                                    </button>
+                                                                                )}
+                                                                                {slip.receiptUrl && (
+                                                                                    <a 
+                                                                                        href={slip.receiptUrl} 
+                                                                                        target="_blank" 
+                                                                                        rel="noreferrer"
+                                                                                        className="px-3 py-1.5 border border-green-200 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg text-xs font-medium transition-colors cursor-pointer inline-block"
+                                                                                    >
+                                                                                        查看收據
+                                                                                    </a>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
+                                                                    <Receipt className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                                                                    尚無繳費紀錄
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         </td>
@@ -576,6 +711,278 @@ export const StudentList: React.FC<StudentListProps> = ({ students, lessons, tea
                                 確認移除
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Hidden File Input for Receipt Upload */}
+            <input 
+                type="file" 
+                ref={fileInputRef}
+                className="hidden" 
+                accept="image/*"
+                onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file && uploadingReceiptId) {
+                        try {
+                            const slip = paymentSlips.find(s => s.id === uploadingReceiptId);
+                            if (slip) {
+                                const url = await db.uploadImage(file);
+                                onUpdatePaymentSlip({
+                                    ...slip,
+                                    status: 'paid',
+                                    receiptUrl: url
+                                });
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert('上傳失敗');
+                        }
+                    }
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    setUploadingReceiptId(null);
+                }}
+            />
+
+            {/* Payment Slip Modal */}
+            {isPaymentModalOpen && editingPaymentSlip && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-2 sm:p-4 print:p-0 print:bg-white overflow-y-auto">
+                    <div className={`bg-white shadow-2xl relative w-full ${printPreviewMode ? 'max-w-[800px] my-auto print:shadow-none' : 'max-w-2xl rounded-2xl animate-in zoom-in-95'}`}>
+                        {!printPreviewMode ? (
+                            <div className="flex flex-col max-h-[85vh]">
+                                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                                    <h3 className="text-lg font-bold text-gray-800 flex items-center"><Receipt className="w-5 h-5 mr-2 text-amber-600"/> 繳費單設定</h3>
+                                    <button onClick={() => setIsPaymentModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <div className="p-6 overflow-y-auto custom-scrollbar space-y-5">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">流水編號</label>
+                                            <input 
+                                                type="text" 
+                                                disabled
+                                                className="w-full h-10 px-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 font-mono text-sm"
+                                                value={editingPaymentSlip.serialNumber}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">開立日期</label>
+                                            <input 
+                                                type="date" 
+                                                className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                                                value={editingPaymentSlip.date}
+                                                onChange={e => setEditingPaymentSlip({...editingPaymentSlip, date: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="text-sm font-bold text-gray-700">收費項目</h4>
+                                            <button 
+                                                onClick={() => {
+                                                    const newItem = { id: `i-${Date.now()}`, name: '', amount: 0 };
+                                                    setEditingPaymentSlip({
+                                                        ...editingPaymentSlip,
+                                                        items: [...editingPaymentSlip.items, newItem]
+                                                    });
+                                                }}
+                                                className="text-xs text-blue-600 font-medium hover:text-blue-800 flex items-center"
+                                            >
+                                                <Plus className="w-3.5 h-3.5 mr-1"/> 新增項目
+                                            </button>
+                                        </div>
+                                        
+                                        {editingPaymentSlip.items.map((item, index) => (
+                                            <div key={item.id} className="flex items-center gap-3">
+                                                <input 
+                                                    type="text" 
+                                                    className="flex-1 h-10 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none placeholder-gray-400"
+                                                    placeholder="項目名稱 (例如：鋼琴一期、教材費)"
+                                                    value={item.name}
+                                                    onChange={e => {
+                                                        const newItems = [...editingPaymentSlip.items];
+                                                        newItems[index].name = e.target.value;
+                                                        setEditingPaymentSlip({...editingPaymentSlip, items: newItems});
+                                                    }}
+                                                />
+                                                <div className="relative w-32">
+                                                    <span className="absolute left-3 top-2.5 text-gray-500 font-medium">$</span>
+                                                    <input 
+                                                        type="number" 
+                                                        className="w-full h-10 pl-7 pr-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                                                        value={item.amount || ''}
+                                                        onChange={e => {
+                                                            const newItems = [...editingPaymentSlip.items];
+                                                            newItems[index].amount = parseInt(e.target.value) || 0;
+                                                            const newTotal = newItems.reduce((acc, curr) => acc + curr.amount, 0);
+                                                            setEditingPaymentSlip({...editingPaymentSlip, items: newItems, totalAmount: newTotal});
+                                                        }}
+                                                    />
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const newItems = editingPaymentSlip.items.filter((_, i) => i !== index);
+                                                        const newTotal = newItems.reduce((acc, curr) => acc + curr.amount, 0);
+                                                        setEditingPaymentSlip({...editingPaymentSlip, items: newItems, totalAmount: newTotal});
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                                    disabled={editingPaymentSlip.items.length <= 1}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        
+                                        <div className="pt-4 flex justify-end items-center border-t border-gray-100 mt-4">
+                                            <span className="text-gray-600 font-medium mr-4">總計金額:</span>
+                                            <span className="text-xl font-bold text-gray-900 font-mono">NT$ {editingPaymentSlip.totalAmount.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="px-6 py-4 bg-gray-50 flex justify-end items-center gap-3 border-t border-gray-100 rounded-b-2xl">
+                                    <button 
+                                        onClick={() => setIsPaymentModalOpen(false)}
+                                        className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        取消
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            const toSave = { ...editingPaymentSlip };
+                                            if (!toSave.id) {
+                                                onAddPaymentSlip({ ...toSave, id: `ps-${Date.now()}` });
+                                            } else {
+                                                onUpdatePaymentSlip(toSave);
+                                            }
+                                            setIsPaymentModalOpen(false);
+                                        }}
+                                        className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-sm transition-colors text-sm font-medium"
+                                    >
+                                        儲存繳費單
+                                    </button>
+                                    <button 
+                                        onClick={() => setPrintPreviewMode(true)}
+                                        className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-colors flex items-center text-sm font-medium"
+                                    >
+                                        <Printer className="w-4 h-4 mr-1.5" />
+                                        預覽與列印
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-white p-8 sm:p-12 min-h-[1000px] print:min-h-0 print:p-0 relative font-sans text-gray-900 border border-gray-200 shadow-sm print:border-none">
+                                {/* Print Actions */}
+                                <div className="absolute top-4 right-4 flex space-x-2 print:hidden z-10">
+                                    <button 
+                                        onClick={() => setPrintPreviewMode(false)}
+                                        className="px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors shadow-sm"
+                                    >
+                                        返回編輯
+                                    </button>
+                                    <button 
+                                        onClick={() => window.print()}
+                                        className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm flex items-center"
+                                    >
+                                        <Printer className="w-4 h-4 mr-2" /> 列印 A4
+                                    </button>
+                                </div>
+
+                                {/* Main Slip */}
+                                <div className="mb-12 print:mt-12">
+                                    <div className="text-center mb-8">
+                                        <h1 className="text-3xl font-bold mb-2 tracking-widest">{systemConfig?.appInfo.sidebarTitle || 'Smiling Music'}</h1>
+                                        <h2 className="text-xl font-medium text-gray-600 tracking-widest">課 程 繳 費 單</h2>
+                                    </div>
+
+                                    <div className="flex justify-between items-end mb-6 border-b-2 border-gray-800 pb-2">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center text-lg"><span className="w-24 text-gray-600">學生姓名：</span> <strong>{students.find(s => s.id === editingPaymentSlip.studentId)?.name}</strong></div>
+                                            <div className="flex items-center text-lg"><span className="w-24 text-gray-600">開立日期：</span> <span>{editingPaymentSlip.date}</span></div>
+                                        </div>
+                                        <div className="text-sm font-mono text-gray-500">
+                                            No. {editingPaymentSlip.serialNumber}
+                                        </div>
+                                    </div>
+
+                                    <table className="w-full mb-8">
+                                        <thead className="border-b-2 border-gray-800 bg-gray-50">
+                                            <tr>
+                                                <th className="py-3 px-4 text-left font-bold text-gray-700 w-16">項次</th>
+                                                <th className="py-3 px-4 text-left font-bold text-gray-700">品項名稱</th>
+                                                <th className="py-3 px-4 text-right font-bold text-gray-700 w-48">金額 (NT$)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
+                                            {editingPaymentSlip.items.map((item, index) => (
+                                                <tr key={item.id}>
+                                                    <td className="py-4 px-4 text-gray-600">{index + 1}</td>
+                                                    <td className="py-4 px-4 font-medium">{item.name}</td>
+                                                    <td className="py-4 px-4 text-right font-mono">{item.amount.toLocaleString()}</td>
+                                                </tr>
+                                            ))}
+                                            {/* Empty rows filler if needed for visual height */}
+                                            {Array.from({ length: Math.max(0, 5 - editingPaymentSlip.items.length) }).map((_, i) => (
+                                                <tr key={`empty-${i}`}>
+                                                    <td className="py-4 px-4">&nbsp;</td><td className="py-4 px-4"></td><td className="py-4 px-4"></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot className="border-t-2 border-gray-800">
+                                            <tr>
+                                                <th colSpan={2} className="py-4 px-4 text-right font-bold text-xl text-gray-800 tracking-widest">總計金額</th>
+                                                <th className="py-4 px-4 text-right font-bold text-2xl font-mono text-gray-900">NT$ {editingPaymentSlip.totalAmount.toLocaleString()}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    
+                                    <div className="text-sm text-gray-500 leading-relaxed max-w-2xl bg-gray-50 p-4 rounded-lg">
+                                        備註：<br/>
+                                        本單據為課程費用繳費通知，請於期限內完成繳納。<br/>
+                                        如有任何問題，請與櫃檯或授課老師聯繫。<br/>
+                                        {systemConfig?.website?.contact?.info?.phone?.value ? `聯絡電話：${systemConfig.website.contact.info.phone.value}` : ''}
+                                    </div>
+                                </div>
+
+                                {/* Scissor Line */}
+                                <div className="relative py-8 my-8 print:my-16 flex items-center px-4 overflow-hidden">
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-full border-t-2 border-dashed border-gray-400"></div>
+                                    </div>
+                                    <div className="bg-white px-4 relative z-10 text-gray-400 text-xs tracking-widest flex items-center shrink-0">
+                                        <span className="mr-2">✂</span> 請 沿 虛 線 撕 下 繳 回
+                                    </div>
+                                </div>
+
+                                {/* Receipt Part */}
+                                <div>
+                                    <div className="text-center mb-6">
+                                        <h2 className="text-xl font-bold text-gray-800 tracking-widest">收 據 (聯)</h2>
+                                    </div>
+                                    
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <div className="flex items-center text-lg mb-2"><span className="w-24 text-gray-600">流水編號：</span> <strong className="font-mono text-base">{editingPaymentSlip.serialNumber}</strong></div>
+                                            <div className="flex items-center text-lg mb-2"><span className="w-24 text-gray-600">學生姓名：</span> <strong>{students.find(s => s.id === editingPaymentSlip.studentId)?.name}</strong></div>
+                                            <div className="flex items-center text-lg"><span className="w-24 text-gray-600">總計金額：</span> <strong className="text-xl">NT$ {editingPaymentSlip.totalAmount.toLocaleString()}</strong></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-8 mt-12 bg-amber-50/50 p-6 rounded-xl border border-amber-100">
+                                        <div>
+                                            <div className="text-gray-500 mb-2 font-medium">繳費時間 (請親自填寫)：</div>
+                                            <div className="border-b border-gray-400 h-8 w-64 mt-4"></div>
+                                        </div>
+                                        <div>
+                                            <div className="text-gray-500 mb-2 font-medium">收款人簽章 (請親自簽屬)：</div>
+                                            <div className="border-b border-gray-400 h-8 w-64 mt-4"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

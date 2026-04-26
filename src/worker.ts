@@ -42,7 +42,7 @@ interface Env {
 // Base tables list
 const TABLES = [
   'Students', 'Teachers', 'Lessons', 'Expenses', 'Sales', 
-  'Users', 'Availabilities', 'CalendarNotes', 'SystemConfig', 'Inquiries'
+  'Users', 'Availabilities', 'CalendarNotes', 'SystemConfig', 'Inquiries', 'PaymentSlips'
 ];
 
 // Helper to generate CREATE SQL for a specific prefix
@@ -80,6 +80,10 @@ const generateCreateSQL = (prefix: string) => `
   CREATE TABLE IF NOT EXISTS ${prefix}Inquiries (
     id TEXT PRIMARY KEY, name TEXT, phone TEXT, subject TEXT, message TEXT, 
     status TEXT, createdAt TEXT, lastContactedAt TEXT, lastContactedBy TEXT, adminNotes TEXT
+  );
+  CREATE TABLE IF NOT EXISTS ${prefix}PaymentSlips (
+    id TEXT PRIMARY KEY, serialNumber TEXT, studentId TEXT, date TEXT, 
+    items TEXT, totalAmount INTEGER, status TEXT, receiptUrl TEXT
   );
 `;
 
@@ -393,7 +397,8 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
     availabilities: 'Availabilities',
     calendar_notes: 'CalendarNotes',
     system_config: 'SystemConfig',
-    inquiries: 'Inquiries'
+    inquiries: 'Inquiries',
+    payment_slips: 'PaymentSlips'
   };
 
   let tableName = tableMap[collection];

@@ -16,7 +16,8 @@ const JSON_FIELDS: Record<string, string[]> = {
     lessons: ['studentIds', 'studentNotes'],
     users: ['permissions', 'settings'],
     availabilities: ['timeSlots'],
-    system_config: ['subjects', 'expenseCategories', 'classTypes', 'appInfo', 'website']
+    system_config: ['subjects', 'expenseCategories', 'classTypes', 'appInfo', 'website'],
+    payment_slips: ['items']
 };
 
 // Mode State
@@ -359,7 +360,7 @@ export const db = {
             if (useLocalStorage) {
                 if (forceReset) {
                     const collections = Object.keys(JSON_FIELDS);
-                    collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries'); 
+                    collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries', 'payment_slips'); 
                     collections.forEach(c => localStorage.removeItem(`eduflow_${currentMode}_${c}`));
                 }
             }
@@ -406,7 +407,7 @@ export const db = {
             // Local Storage Export Logic
             const exportData: Record<string, any[]> = {};
             const collections = Object.keys(JSON_FIELDS);
-            collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries'); 
+            collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries', 'payment_slips'); 
             
             collections.forEach(c => {
                 // Map collection names to standard Table names if possible to keep format consistent with API
@@ -414,7 +415,8 @@ export const db = {
                     students: 'Students', teachers: 'Teachers', lessons: 'Lessons',
                     expenses: 'Expenses', sales: 'Sales', users: 'Users',
                     availabilities: 'Availabilities', calendar_notes: 'CalendarNotes',
-                    system_config: 'SystemConfig', inquiries: 'Inquiries'
+                    system_config: 'SystemConfig', inquiries: 'Inquiries',
+                    payment_slips: 'PaymentSlips'
                 };
                 const key = map[c] || c;
                 exportData[key] = this.lsGet(c);
@@ -448,7 +450,7 @@ export const db = {
             
             // Clear current data first (Safety)
             const collections = Object.keys(JSON_FIELDS);
-            collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries'); 
+            collections.push('students', 'teachers', 'expenses', 'sales', 'inquiries', 'payment_slips'); 
             collections.forEach(c => localStorage.removeItem(`eduflow_${currentMode}_${c}`));
 
             // Restore
@@ -456,7 +458,8 @@ export const db = {
                 Students: 'students', Teachers: 'teachers', Lessons: 'lessons',
                 Expenses: 'expenses', Sales: 'sales', Users: 'users',
                 Availabilities: 'availabilities', CalendarNotes: 'calendar_notes',
-                SystemConfig: 'system_config', Inquiries: 'inquiries'
+                SystemConfig: 'system_config', Inquiries: 'inquiries',
+                PaymentSlips: 'payment_slips'
             };
 
             for (const [key, rows] of Object.entries(json.data)) {

@@ -119,6 +119,23 @@ export interface Sale {
     total: number;      // quantity * price
 }
 
+export interface PaymentItem {
+    id: string;
+    name: string;
+    amount: number;
+}
+
+export interface PaymentSlip {
+    id: string; // The unique DB ID
+    serialNumber: string; // The independent running number (e.g., PS-20260426-001)
+    studentId: string;
+    date: string; // YYYY-MM-DD
+    items: PaymentItem[];
+    totalAmount: number;
+    status: 'pending' | 'paid';
+    receiptUrl?: string; // Optional image URL for the receipt
+}
+
 // --- Auth & Permissions Types ---
 
 export type ModuleId = 
