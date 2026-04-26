@@ -29,6 +29,17 @@ import { db } from './services/db';
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Dynamic Document Title based on Route
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+        document.title = 'Smiling Music Class | 後台管理';
+    } else if (location.pathname === '/login') {
+        document.title = 'Smiling Music Class | 系統登入';
+    } else {
+        document.title = 'Smiling Music Class | 官方網站';
+    }
+  }, [location.pathname]);
   
   // Sidebar State
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
