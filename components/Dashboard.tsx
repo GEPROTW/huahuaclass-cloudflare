@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Lesson, Student, Teacher, AppUser, getClassTypeName, SystemConfig } from '../types';
-import { Users, BookOpen, Clock, Calendar, User, CheckCircle, Circle, TrendingUp, PieChart as PieChartIcon, X, UserCheck, GraduationCap, DollarSign, Calendar as CalendarIcon, Radio } from 'lucide-react';
+import { Lesson, Student, Teacher, AppUser, getClassTypeName, SystemConfig, Announcement } from '../types';
+import { Users, BookOpen, Clock, Calendar, User, CheckCircle, Circle, TrendingUp, PieChart as PieChartIcon, X, UserCheck, GraduationCap, DollarSign, Calendar as CalendarIcon, Radio, Megaphone, Plus, Trash2, Edit } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { db } from '../services/db';
 
 interface DashboardProps {
     lessons: Lesson[];
@@ -28,6 +29,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ lessons, students, teacher
     const [timeView, setTimeView] = useState<TimeView>('day');
     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
     const [currentTime, setCurrentTime] = useState(new Date());
+
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [isEditingAnnouncement, setIsEditingAnnouncement] = useState(false);
+    const [currentAnnouncement, setCurrentAnnouncement] = useState<Partial<Announcement>>({});
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const data = await db.getCollection('announcements');
+                setAnnouncements(data || []);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        fetchAnnouncements();
+    }, []);
+
+    const handleSaveAnnouncement = async () => {
+        if (!currentAnnouncement.title || !currentAnnouncement.content) return;
+        const isNew = !currentAnnouncement.id;
+        const payload = {
+            ...currentAnnouncement,
+            id: currentAnnouncement.id || `ann-${Date.now()}`,
+            date: currentAnnouncement.date || new Date().toISOString(),
+            authorName: currentUser?.name || '管理員',
+            isPinned: !!currentAnnouncement.isPinned
+        };
+        try {
+            if (isNew) {
+                await db.add('announcements', payload);
+                setAnnouncements([...announcements, payload as Announcement]);
+            } else {
+                await db.update('announcements', payload);
+                setAnnouncements(announcements.map(a => a.id === payload.id ? payload as Announcement : a));
+            }
+            setIsEditingAnnouncement(false);
+        } catch(e) {
+            console.error(e);
+        }
+    };
+
+    const handleDeleteAnnouncement = async (id: string) => {
+        if (!confirm('確定要刪除這則佈告嗎？')) return;
+        try {
+            await db.delete('announcements', id);
+            setAnnouncements(announcements.filter(a => a.id !== id));
+        } catch(e) {
+            console.error(e);
+        }
+    };
 
     // Update time every minute to refresh "In Progress" status
     useEffect(() => {
@@ -170,30 +221,65 @@ export const Dashboard: React.FC<DashboardProps> = ({ lessons, students, teacher
                 </div>
             </div>
 
-            {/* Charts Section - Stack on Tablet (xl:grid-cols-2) */}
-            {isAdmin && (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
-                        <h3 className="font-bold text-gray-800 mb-4 flex items-center text-sm">
-                            <TrendingUp className="w-4 h-4 mr-2 text-emerald-500" />
-                            近七日課程趨勢
+            {/* Reports & Announcements Section */}
+            <div className={`grid grid-cols-1 ${isAdmin ? 'xl:grid-cols-2' : ''} gap-6`}>
+                {/* Bulletin Board - Visible to All */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-gray-800 flex items-center text-sm">
+                            <Megaphone className="w-4 h-4 mr-2 text-emerald-500" />
+                            內部佈告欄
                         </h3>
-                        <div className="flex-1 w-full min-h-0">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={dailyData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="date" tick={{fontSize: 10}} stroke="#94a3b8" />
-                                    <YAxis allowDecimals={false} stroke="#94a3b8" tick={{fontSize: 10}} />
-                                    <Tooltip 
-                                        cursor={{fill: '#f8fafc'}}
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
-                                    />
-                                    <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} name="課程數" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        {isAdmin && (
+                            <button 
+                                onClick={() => {
+                                    setCurrentAnnouncement({});
+                                    setIsEditingAnnouncement(true);
+                                }}
+                                className="text-emerald-700 font-bold flex items-center text-xs bg-emerald-50 hover:bg-emerald-100 transition-colors px-2 py-1.5 rounded"
+                            >
+                                <Plus className="w-3 h-3 mr-1" /> 新增
+                            </button>
+                        )}
                     </div>
+                    <div className="flex-1 w-full min-h-0 overflow-y-auto custom-scrollbar pr-2 space-y-3">
+                        {announcements
+                            .sort((a,b) => {
+                                if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
+                                return new Date(b.date).getTime() - new Date(a.date).getTime();
+                            })
+                            .map(ann => (
+                            <div key={ann.id} className={`p-4 rounded-lg border ${ann.isPinned ? 'border-amber-200 bg-amber-50/50' : 'border-gray-100 bg-gray-50/50'} hover:bg-opacity-80 transition-colors`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-bold text-gray-800 text-sm flex items-center">
+                                        {ann.isPinned && <span className="bg-amber-100 text-amber-700 border border-amber-200 text-[10px] px-1.5 py-0.5 rounded mr-2 font-bold whitespace-nowrap">置頂</span>}
+                                        {ann.title}
+                                    </h4>
+                                    {isAdmin && (
+                                        <div className="flex items-center space-x-2 ml-2">
+                                            <button onClick={() => { setCurrentAnnouncement(ann); setIsEditingAnnouncement(true); }} className="text-gray-400 hover:text-blue-500 bg-white p-1 rounded shadow-sm border border-gray-100"><Edit className="w-3 h-3" /></button>
+                                            <button onClick={() => handleDeleteAnnouncement(ann.id)} className="text-gray-400 hover:text-red-500 bg-white p-1 rounded shadow-sm border border-gray-100"><Trash2 className="w-3 h-3" /></button>
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-600 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
+                                <div className="mt-3 flex items-center justify-between text-[10px] text-gray-400 font-medium">
+                                    <span>由 {ann.authorName} 發布</span>
+                                    <span>{new Date(ann.date).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        ))}
+                        {announcements.length === 0 && (
+                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                <Megaphone className="w-8 h-8 mb-2 opacity-20" />
+                                <span className="text-sm">目前沒有公告</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
 
+                {/* Popular Subjects Chart - Admin Only */}
+                {isAdmin && (
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
                         <h3 className="font-bold text-gray-800 mb-4 flex items-center text-sm">
                             <PieChartIcon className="w-4 h-4 mr-2 text-blue-500" />
@@ -223,8 +309,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ lessons, students, teacher
                             </ResponsiveContainer>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Course Schedule Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[400px]">
@@ -491,6 +577,69 @@ export const Dashboard: React.FC<DashboardProps> = ({ lessons, students, teacher
                         <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
                             <button onClick={() => setSelectedLesson(null)} className="px-6 py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 shadow-sm transition-colors text-sm">
                                 關閉視窗
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Announcement Editor Modal */}
+            {isEditingAnnouncement && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[70] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 className="text-lg font-bold text-slate-800">
+                                {currentAnnouncement.id ? '編輯公告' : '新增公告'}
+                            </h3>
+                            <button onClick={() => setIsEditingAnnouncement(false)} className="text-slate-400 hover:text-slate-600">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">標題 <span className="text-red-500">*</span></label>
+                                <input 
+                                    type="text" 
+                                    value={currentAnnouncement.title || ''}
+                                    onChange={e => setCurrentAnnouncement({...currentAnnouncement, title: e.target.value})}
+                                    className="w-full border border-gray-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                    placeholder="輸入公告標題..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">內容 <span className="text-red-500">*</span></label>
+                                <textarea 
+                                    value={currentAnnouncement.content || ''}
+                                    onChange={e => setCurrentAnnouncement({...currentAnnouncement, content: e.target.value})}
+                                    className="w-full border border-gray-300 rounded-lg py-2 px-3 h-32 focus:outline-none focus:ring-2 focus:ring-emerald-500 custom-scrollbar"
+                                    placeholder="輸入公告內容..."
+                                />
+                            </div>
+                            <div className="flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    id="isPinned"
+                                    checked={!!currentAnnouncement.isPinned}
+                                    onChange={e => setCurrentAnnouncement({...currentAnnouncement, isPinned: e.target.checked})}
+                                    className="mr-2"
+                                />
+                                <label htmlFor="isPinned" className="text-sm font-bold text-amber-600">
+                                    置頂此公告
+                                </label>
+                            </div>
+                        </div>
+                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end space-x-3">
+                            <button 
+                                onClick={() => setIsEditingAnnouncement(false)}
+                                className="px-5 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50"
+                            >
+                                取消
+                            </button>
+                            <button 
+                                onClick={handleSaveAnnouncement}
+                                disabled={!currentAnnouncement.title || !currentAnnouncement.content}
+                                className="px-5 py-2 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                儲存發布
                             </button>
                         </div>
                     </div>

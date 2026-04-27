@@ -42,7 +42,7 @@ interface Env {
 // Base tables list
 const TABLES = [
   'Students', 'Teachers', 'Lessons', 'Expenses', 'Sales', 
-  'Users', 'Availabilities', 'CalendarNotes', 'SystemConfig', 'Inquiries', 'PaymentSlips'
+  'Users', 'Availabilities', 'CalendarNotes', 'SystemConfig', 'Inquiries', 'PaymentSlips', 'Announcements'
 ];
 
 // Helper to generate CREATE SQL for a specific prefix
@@ -84,6 +84,9 @@ const generateCreateSQL = (prefix: string) => `
   CREATE TABLE IF NOT EXISTS ${prefix}PaymentSlips (
     id TEXT PRIMARY KEY, serialNumber TEXT, studentId TEXT, date TEXT, 
     items TEXT, totalAmount INTEGER, status TEXT, receiptUrl TEXT
+  );
+  CREATE TABLE IF NOT EXISTS ${prefix}Announcements (
+    id TEXT PRIMARY KEY, title TEXT, content TEXT, date TEXT, authorName TEXT, isPinned BOOLEAN
   );
 `;
 
@@ -251,7 +254,8 @@ export default {
                 `ALTER TABLE ${prefix}SystemConfig ADD COLUMN classrooms TEXT`,
                 `ALTER TABLE ${prefix}SystemConfig ADD COLUMN teachingAids TEXT`,
                 `ALTER TABLE ${prefix}Lessons ADD COLUMN classroomId TEXT`,
-                `ALTER TABLE ${prefix}Lessons ADD COLUMN teachingAidIds TEXT`
+                `ALTER TABLE ${prefix}Lessons ADD COLUMN teachingAidIds TEXT`,
+                `CREATE TABLE IF NOT EXISTS ${prefix}Announcements (id TEXT PRIMARY KEY, title TEXT, content TEXT, date TEXT, authorName TEXT, isPinned BOOLEAN)`
             ];
 
             for (const migration of migrations) {
@@ -408,7 +412,8 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
     calendar_notes: 'CalendarNotes',
     system_config: 'SystemConfig',
     inquiries: 'Inquiries',
-    payment_slips: 'PaymentSlips'
+    payment_slips: 'PaymentSlips',
+    announcements: 'Announcements'
   };
 
   let tableName = tableMap[collection];

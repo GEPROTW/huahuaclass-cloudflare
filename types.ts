@@ -43,6 +43,15 @@ export interface Lesson {
     studentNotes?: Record<string, string>; // Individual Student Notes (課堂進度) - Map<StudentId, Note>
 }
 
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+    authorName?: string;
+    isPinned?: boolean;
+}
+
 // New: Teacher Availability Interface
 export interface Availability {
     id: string;
